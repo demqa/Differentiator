@@ -1,0 +1,6 @@
+#ifndef DIFFERENTIATOR_CONFIG_H
+
+#define DIFFERENTIATOR_CONFIG_H
+
+#endif
+
