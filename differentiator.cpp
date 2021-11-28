@@ -1,5 +1,3 @@
-Demqa Alexeev, [27/11/2021 13:07]
-[Forwarded from Demqa Alexeev]
 #include "differentiator.h"
 
 int ReadExpression(Tree_t *tree)
