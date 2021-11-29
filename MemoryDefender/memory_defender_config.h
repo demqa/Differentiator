@@ -1,0 +1,7 @@
+#ifndef MEMORY_DEFENDER_CONFIG_H
+
+#define MEMORY_DEFENDER_CONFIG_H
+
+const size_t MAX_ALLOCS = 20;
+
+#endif
