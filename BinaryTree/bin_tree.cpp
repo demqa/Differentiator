@@ -53,7 +53,7 @@ TreeStatus NodesDtor     (Node_t *node)
     node->left  = DEAD_PTR;
     node->right = DEAD_PTR;
     
-    node->value = DEAD_ELEM;
+    node->value = DEAD_VAL;
     // CHANGE      ^     SOMEDAY
     // ON SOMETHING BETTER
 

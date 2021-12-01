@@ -3,14 +3,14 @@
 #define BIN_TREE_H
 
 #include <stdio.h>
-#include "bin_tree_config.h"
-
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
 #include <assert.h>
 
 #include <sys/stat.h>
+
+#include "bin_tree_config.h"
 
 enum TreeStatus
 {

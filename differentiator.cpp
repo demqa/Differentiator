@@ -1,5 +1,4 @@
 #include "differentiator.h"
-#include "BinaryTree/bin_tree.h"
 #include "debug_lib.h"
 
 int Filesize  (FILE *stream, size_t *filesize)
@@ -49,49 +48,153 @@ int ReadBuffer(char **buffer, FILE *stream)
     return 0;
 }
 
-int GetString (char **ptr, char *end_ptr, char **string)
+int GetString (char **ptr, char *string)
 {
-    if (ptr == nullptr || *ptr == nullptr || end_ptr == nullptr) return PTR_IS_NULL;
+    if (ptr == nullptr || *ptr == nullptr || string == nullptr) return PTR_IS_NULL;
 
-    if (*ptr > end_ptr) return PTR_BIGGER_BUFF_END;
-
-    *string    = *ptr;
-    int number =  0;
+    size_t num = 0;
 
     assert(**ptr != ')');
 
     while (*(*ptr + 1) != ')' && *(*ptr + 1) != '(')
     {
-        if (*ptr + 1 >= end_ptr)          return TILT;
+        if (**ptr == '\0') return TILT;
 
-        if (number + 1 >= MAX_EXPR_ELEM_LEN) return MAX_EXPR_ELEM_LEN_REACHED;
+        if (num + 1 >= MAX_EXPR_ELEM_LEN) return MAX_EXPR_ELEM_LEN_REACHED;
 
-        (*string)[number++] = **ptr;
+        string[num++] = **ptr;
 
         (*ptr)++;
     }
 
-    assert(number < MAX_EXPR_ELEM_LEN);
+    assert(num < MAX_EXPR_ELEM_LEN);
 
-    if (number == 0) return EXPR_ELEM_IS_EMPTY;
+    if (num == 0) return EXPR_ELEM_IS_EMPTY;
 
-    if ((*string)[number] != ' ')
-        fprintf(stderr, "WHY YOU CANT JUST PUT SPACE AFTER NAME\n");
+    string[num] = '\0';
 
-    (*string)[number] = '\0';
-
-    assert(*ptr < end_ptr);
-    
     return DEAD_INSIDE;
 }
 
-int EvalString        (char *string, RT *arg)
+int IsCharOper(const char c)
+{
+    if (c == '-' || c == '+' || c == '*' || c == '/' || c == '^')
+        return 1;
+
+    return 0;
+}
+
+int GetArg(char *string, RT *arg)
 {
     if (string == nullptr || arg == nullptr) return PTR_IS_NULL;
 
-    // TODO
+    size_t number = 0;
 
-    return 0;
+    size_t length = strlen(string);
+
+    if (length == 0) return INVALID_STRING;
+
+    if (length == 1 && IsCharOper(string[0]))
+    {
+        arg->type = OPER_TYPE;
+        arg->oper = string[0];
+        // arg->subtree_status = NOT_CALCULATED;
+    }
+    else
+    if (length == 1 && 'a' < string[0] && string[0] < 'z')
+    {
+        arg->type = VAR_TYPE;
+        arg->var  = string[0];
+        // arg->subtree_status = VARIABLE;
+    }
+    else
+    if (length == 2 && strcmp(string, "ln"))
+    {
+        fprintf(stderr, "I can't do this yet\n");
+        return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
+    }
+    else
+    if (length == 2 && strcmp(string, "lg"))
+    {
+        fprintf(stderr, "I can't do this yet\n");
+        return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
+    }
+    else
+    if (length == 2 && strcmp(string, "sh"))
+    {
+        fprintf(stderr, "I can't do this yet\n");
+        return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
+    }
+    else
+    if (length == 2 && strcmp(string, "ch"))
+    {
+        fprintf(stderr, "I can't do this yet\n");
+        return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
+    }
+    else
+    if (length == 3 && strcmp(string, "sin"))
+    {
+        fprintf(stderr, "I can't do this yet\n");
+        return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
+    }
+    else
+    if (length == 3 && strcmp(string, "cos"))
+    {
+        fprintf(stderr, "I can't do this yet\n");
+        return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
+    }
+    else
+    {
+        int flag = 1;
+        for (size_t i = 0; i < length; i++)
+            if ((string[i] > '9' || string[i] < '0') && string[i] != '.')
+                flag = 0;
+
+        assert('0' < '9');
+
+        if (flag)
+        {
+            double num = NAN;
+            if (sscanf(string, "%lf", &num) == 1)
+            {           
+                arg->type = NUM_TYPE;
+                arg->num  = num;
+                // arg->subtree_status = CONST;
+            }
+            else
+                return NUMBER_READING_ERROR;
+        }
+        else
+        {
+            fprintf(stderr, "UNKNOWN EXPRESSION %s\n", string);
+            return UNKNOWN_EXPRESSION;
+        }
+    }
+
+    return FUNC_IS_OK;
+}
+
+int ProceedNodeValue(char **ptr, Node_t *node)
+{
+    int status = FUNC_IS_OK;
+
+    char *string = (char *) calloc(MAX_EXPR_ELEM_LEN + 1, sizeof(char));
+    if (string == nullptr) status |= BAD_ALLOC;
+
+    status |= GetString(ptr, string);
+
+    RT *arg = (RT *) calloc(1, sizeof(RT));
+    if (arg == nullptr)    status |= BAD_ALLOC;
+
+    status |= GetArg(string, arg);
+
+    free(string);
+
+    if (status) return status;
+
+    node->value = arg;
+    
+    return status;
 }
 
 int TreeReadProcessing(Tree_t *tree, Node_t *node, char **ptr, char *end_ptr)
@@ -110,48 +213,61 @@ int TreeReadProcessing(Tree_t *tree, Node_t *node, char **ptr, char *end_ptr)
         {
             (*ptr)++;
 
-            char *string = nullptr;
-            status |= GetString(ptr, end_ptr, &string);
-            if (status) return status;
-
-            RT arg = {};
-            EvalString(string, &arg);
-            
-            (*ptr)++;
-
             if (node == nullptr)
             {
-                NodeInsert(tree, node, L_CHILD, arg);
+                NodeInsert(tree, node, L_CHILD, nullptr);
                 node = tree->root;
             }
             else
             if (node->left == nullptr)
             {
-                NodeInsert(tree, node, L_CHILD, arg);
+                NodeInsert(tree, node, L_CHILD, nullptr);
                 node = node->left;
             }
             else
             {
-                NodeInsert(tree, node, R_CHILD, arg);
+                NodeInsert(tree, node, R_CHILD, nullptr);
                 node = node->right;
             }
+
+            if (**ptr == '(')
+                continue;
+
+            if (**ptr == ')')
+            {
+                // somehow be ready to proceed sin/cos/ln
+                assert(false);
+            }
+            
+            // number or variable
+            ProceedNodeValue(ptr, node);
+            
+            node = node->parent;
+
+            (*ptr)++;
         }
         else
         if (**ptr == ')')
         {
             if (node == nullptr) return FUCK_MY_LIFE;
 
-            (*ptr)++;
-
             if (node == tree->root)
                 break;
+
+            (*ptr)++;
 
             node = node->parent;
         }
         else
         {
-            assert(**ptr == '\n');
-            break;
+            if (node == nullptr) return FUCK_MY_LIFE;
+            
+            assert(node->value == nullptr);
+
+            // operator
+            ProceedNodeValue(ptr, node);
+
+            (*ptr)++;
         }
     }
     
@@ -242,18 +358,84 @@ int IsZero (Node_t *node) /*Is Subtree Zero*/
     return 0;
 }
 
-int DiffNodes    (Node_t *node)
+int DiffNodes    (Node_t *node, Node_t **diff, const char variable)
 {
-    if (node == nullptr) return NODE_PTR_IS_NULL;
+    if (node == nullptr)                     return NODE_PTR_IS_NULL;
 
-    return 0;
+    if (diff == nullptr || *diff != nullptr) return PTR_IS_NULL;
+
+    Node_t *new_node = (Node_t *) calloc(1, sizeof(Node_t));
+    if (new_node == nullptr) return BAD_ALLOC;
+
+    RT *arg = node->value;
+
+    int status = FUNC_IS_OK;
+    if (arg->type == OPER_TYPE)
+    {
+
+    }
+    else
+    if (arg->type == NUM_TYPE)
+    {
+
+    }
+    else
+    if (arg->type == VAR_TYPE)
+    {
+
+    }
+    else
+        return EXCEPTION_UNEXPECTED_VALUE_TYPE;
+
+    return status;
 }
 
-int Differentiate(Tree_t *tree)
+int CopyNodes(Node_t *node, Node_t **copy)
+{
+    if (node == nullptr)                     return NODE_PTR_IS_NULL;
+
+    if (copy == nullptr || *copy != nullptr) return PTR_IS_NULL;
+
+    // i have to save these ptr's or 
+    // do some func that will free
+    // this memory when it won't be used no more
+    Node_t *new_node = (Node_t *) calloc(1, sizeof(node));
+    if (new_node == nullptr) return BAD_ALLOC;
+
+    RT *arg = (RT *) calloc(1, sizeof(RT));
+    if (arg == nullptr)      return BAD_ALLOC;
+
+    RT *check = (RT *) memcpy(arg, node->value, sizeof(RT));
+    if (check != arg)        return MEMCPY_CRASH;
+
+    new_node->value = arg;
+
+    int status = FUNC_IS_OK;
+    if (node->left  != nullptr)
+        status |= CopyNodes(node->left,  &new_node->left);
+
+    if (node->right != nullptr)
+        status |= CopyNodes(node->right, &new_node->right);
+
+    *copy = new_node;
+
+    return status;
+}
+
+int Differentiate(Tree_t *tree, Tree_t **tree_res)
 {
     if (tree == nullptr)  return TREE_IS_NULL;
 
     if (TreeVerify(tree)) return TreeDump(tree);
+
+    if (tree_res == nullptr || *tree_res != nullptr)
+        return PTR_IS_NULL;
+
+    Tree_t *new_tree = (Tree_t *) calloc(1, sizeof(Tree_t));
+    if (new_tree == nullptr) return BAD_ALLOC;
+
+    // tree->size doesnt work now
+
 
     return 0;
 }

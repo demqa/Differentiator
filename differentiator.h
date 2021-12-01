@@ -4,7 +4,23 @@
 
 #include <math.h>
 
+#include "BinaryTree/bin_tree.h"
+
 #include "differentiator_config.h"
+
+enum ValueType
+{
+    OPER_TYPE = 1,
+    NUM_TYPE  = 2,
+    VAR_TYPE  = 3,
+};
+
+enum IsConstStatus
+{
+    NOT_CALCULATED   = 0,
+    CONST            = 1,
+    VARIABLE         = 2,
+};
 
 enum DifferentiatorStatus
 {
@@ -24,6 +40,13 @@ enum DifferentiatorStatus
     PTR_BIGGER_BUFF_END,
     MAX_EXPR_ELEM_LEN_REACHED,
     EXPR_ELEM_IS_EMPTY,
+    MEMCPY_CRASH,
+    EXCEPTION_UNEXPECTED_VALUE_TYPE,
+    UNKNOWN_EXPRESSION,
+    NUMBER_READING_ERROR,
+    INVALID_STRING,
+    IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH,
+
 };
 
 #endif

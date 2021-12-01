@@ -10,11 +10,16 @@ struct RT
 
     char   oper;
     double num;
+    char   var;
+
+    int subtree_status;
 };
 
-typedef RT Value_t;
+typedef RT *Value_t;
 
-const Value_t DEAD_ELEM  = {1000, '-', 7};
+const RT DEAD_ELEM     = {1000, '-', 7, 'RT', 228};
+
+const Value_t DEAD_VAL = nullptr;
 
 // FILE *TREE_LOG_FILE_DEFAULT = stderr;
 
