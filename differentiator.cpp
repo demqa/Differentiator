@@ -52,24 +52,30 @@ int GetString (char **ptr, char *string)
 {
     if (ptr == nullptr || *ptr == nullptr || string == nullptr) return PTR_IS_NULL;
 
-    size_t num = 0;
+    if (**ptr == ')')
+    {
+        string[0] = '\0';
+        return FUNC_IS_OK;
+    }
 
-    assert(**ptr != ')');
+    assert(**ptr != '(');
+
+    string[0] = **ptr;
+
+    size_t num = 1;
 
     while (*(*ptr + 1) != ')' && *(*ptr + 1) != '(')
     {
-        if (**ptr == '\0') return TILT;
+        if (*(*ptr + 1) == '\0')          return TILT;
 
         if (num + 1 >= MAX_EXPR_ELEM_LEN) return MAX_EXPR_ELEM_LEN_REACHED;
 
-        string[num++] = **ptr;
-
         (*ptr)++;
+
+        string[num++] = **ptr;
     }
 
     assert(num < MAX_EXPR_ELEM_LEN);
-
-    if (num == 0) return EXPR_ELEM_IS_EMPTY;
 
     string[num] = '\0';
 
@@ -84,7 +90,7 @@ int IsCharOper(const char c)
     return 0;
 }
 
-int GetArg(char *string, RT *arg)
+int GetArg    (char *string, RT *arg)
 {
     if (string == nullptr || arg == nullptr) return PTR_IS_NULL;
 
@@ -108,39 +114,39 @@ int GetArg(char *string, RT *arg)
         // arg->subtree_status = VARIABLE;
     }
     else
-    if (length == 2 && strcmp(string, "ln"))
+    if (length == 2 && strcmp(string, "ln") == 0)
     {
-        fprintf(stderr, "I can't do this yet\n");
+        fprintf(stderr, "I can't do this yet %s\n", string);
         return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
     }
     else
-    if (length == 2 && strcmp(string, "lg"))
+    if (length == 2 && strcmp(string, "lg") == 0)
     {
-        fprintf(stderr, "I can't do this yet\n");
+        fprintf(stderr, "I can't do this yet %s\n", string);
         return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
     }
     else
-    if (length == 2 && strcmp(string, "sh"))
+    if (length == 2 && strcmp(string, "sh") == 0)
     {
-        fprintf(stderr, "I can't do this yet\n");
+        fprintf(stderr, "I can't do this yet %s\n", string);
         return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
     }
     else
-    if (length == 2 && strcmp(string, "ch"))
+    if (length == 2 && strcmp(string, "ch") == 0)
     {
-        fprintf(stderr, "I can't do this yet\n");
+        fprintf(stderr, "I can't do this yet %s\n", string);
         return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
     }
     else
-    if (length == 3 && strcmp(string, "sin"))
+    if (length == 3 && strcmp(string, "sin") == 0)
     {
-        fprintf(stderr, "I can't do this yet\n");
+        fprintf(stderr, "I can't do this yet %s\n", string);
         return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
     }
     else
-    if (length == 3 && strcmp(string, "cos"))
+    if (length == 3 && strcmp(string, "cos") == 0)
     {
-        fprintf(stderr, "I can't do this yet\n");
+        fprintf(stderr, "I can't do this yet %s\n", string);
         return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
     }
     else
@@ -174,19 +180,22 @@ int GetArg(char *string, RT *arg)
     return FUNC_IS_OK;
 }
 
-int ProceedNodeValue(char **ptr, Node_t *node)
+int ProceedNodeValue  (char **ptr, Node_t *node)
 {
     int status = FUNC_IS_OK;
 
     char *string = (char *) calloc(MAX_EXPR_ELEM_LEN + 1, sizeof(char));
     if (string == nullptr) status |= BAD_ALLOC;
 
+    PRINT_C(**ptr);
     status |= GetString(ptr, string);
+    if (status) return status;
 
     RT *arg = (RT *) calloc(1, sizeof(RT));
     if (arg == nullptr)    status |= BAD_ALLOC;
 
     status |= GetArg(string, arg);
+    if (status) return status;
 
     free(string);
 
@@ -209,40 +218,39 @@ int TreeReadProcessing(Tree_t *tree, Node_t *node, char **ptr, char *end_ptr)
 
     while (*ptr <= end_ptr)
     {
+        PRINT_C(**ptr);
         if (**ptr == '(')
         {
             (*ptr)++;
+
+            PRINT_PTR(node);
 
             if (node == nullptr)
             {
                 NodeInsert(tree, node, L_CHILD, nullptr);
                 node = tree->root;
+                PRINT_PTR(node);
             }
             else
             if (node->left == nullptr)
             {
                 NodeInsert(tree, node, L_CHILD, nullptr);
                 node = node->left;
+                PRINT_PTR(node);
             }
             else
             {
                 NodeInsert(tree, node, R_CHILD, nullptr);
                 node = node->right;
+                PRINT_PTR(node);
             }
 
-            if (**ptr == '(')
+            if (**ptr == '(' || **ptr == ')')
                 continue;
-
-            if (**ptr == ')')
-            {
-                // somehow be ready to proceed sin/cos/ln
-                assert(false);
-            }
             
             // number or variable
-            ProceedNodeValue(ptr, node);
-            
-            node = node->parent;
+            status |= ProceedNodeValue(ptr, node);
+            if (status) return status;
 
             (*ptr)++;
         }
@@ -261,17 +269,16 @@ int TreeReadProcessing(Tree_t *tree, Node_t *node, char **ptr, char *end_ptr)
         else
         {
             if (node == nullptr) return FUCK_MY_LIFE;
-            
-            assert(node->value == nullptr);
 
             // operator
-            ProceedNodeValue(ptr, node);
+            status |= ProceedNodeValue(ptr, node);
+            if (status) return status;
 
             (*ptr)++;
         }
     }
     
-    return DEAD_INSIDE;
+    return status;
 }
 
 int TreeRead          (Tree_t *tree, char *buffer, size_t buff_size)
@@ -283,7 +290,7 @@ int TreeRead          (Tree_t *tree, char *buffer, size_t buff_size)
     if (buff_size == 0)    return FILESIZE_IS_ZERO;
 
     char *ptr     = buffer;
-    char *end_ptr = buffer + buff_size - 1;
+    char *end_ptr = buffer + buff_size;
 
     int counter = 0;
     while (ptr <= end_ptr)
@@ -315,6 +322,8 @@ int TreeFill          (Tree_t *tree, FILE *stream, char **buff)
     if (tree == nullptr)   return TREE_IS_NULL;
 
     if (stream == nullptr) return STREAM_IS_NULL;
+
+    if (buff == nullptr || *buff != nullptr) return PTR_IS_NULL;
     
     size_t buff_size = 0;
     if (Filesize(stream, &buff_size)) return FILESIZE_IS_ZERO;
@@ -331,12 +340,6 @@ int TreeFill          (Tree_t *tree, FILE *stream, char **buff)
         return status;
 
     return FUNC_IS_OK;
-}
-
-int ReadExpression    (Tree_t *tree)
-{
-
-    return 0;
 }
 
 /*
@@ -358,7 +361,7 @@ int IsZero (Node_t *node) /*Is Subtree Zero*/
     return 0;
 }
 
-int DiffNodes    (Node_t *node, Node_t **diff, const char variable)
+int DiffNodes(Node_t *node, Node_t **diff, const char variable)
 {
     if (node == nullptr)                     return NODE_PTR_IS_NULL;
 
@@ -442,6 +445,31 @@ int Differentiate(Tree_t *tree, Tree_t **tree_res)
 
 int main()
 {
+    int status = 0;
+    Tree_t tree = {};
+
+    status |= TreeCtor(&tree);
+    if (status) fprintf(stderr, "status = %d\n", status);
+
+    FILE *stream = fopen("expr1", "r");
+    if (stream == nullptr)
+    {
+        fprintf(stderr, "cringe\n");
+        return -1;
+    }
+
+    char *buffer = nullptr;
+
+    status |= TreeFill(&tree, stream, &buffer);
+    if (status) fprintf(stderr, "status = %d\n", status);
+
+    status |= TreeDump(&tree);
+    if (status) fprintf(stderr, "status = %d\n", status);
+    
+    // i lose so many allocated memory...
+
+    TreeDtor(&tree);
+
     return 0;
 }
 

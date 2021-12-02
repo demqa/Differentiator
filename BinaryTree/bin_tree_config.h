@@ -4,6 +4,13 @@
 
 #include <assert.h>
 
+enum ValueType
+{
+    OPER_TYPE = 1,
+    NUM_TYPE  = 2,
+    VAR_TYPE  = 3,
+};
+
 struct RT
 {
     int type;
@@ -17,7 +24,7 @@ struct RT
 
 typedef RT *Value_t;
 
-const RT DEAD_ELEM     = {1000, '-', 7, 'RT', 228};
+const RT DEAD_ELEM     = {1000, '-', 7, (char )'RT', 228};
 
 const Value_t DEAD_VAL = nullptr;
 

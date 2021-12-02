@@ -8,12 +8,12 @@
 
 #include "differentiator_config.h"
 
-enum ValueType
-{
-    OPER_TYPE = 1,
-    NUM_TYPE  = 2,
-    VAR_TYPE  = 3,
-};
+// enum ValueType
+// {
+//     OPER_TYPE = 1,
+//     NUM_TYPE  = 2,
+//     VAR_TYPE  = 3,
+// };
 
 enum IsConstStatus
 {
@@ -30,22 +30,22 @@ enum DifferentiatorStatus
     TILT        = 1,
 
     // errors
-    EXPR_IS_INVALID,
-    BUFFER_IS_NULL,
-    STREAM_IS_NULL,
-    PTR_IS_NULL,
-    FILESIZE_IS_ZERO,
-    BUFFER_CANT_BE_READ,
-    FUCK_MY_LIFE,
-    PTR_BIGGER_BUFF_END,
-    MAX_EXPR_ELEM_LEN_REACHED,
-    EXPR_ELEM_IS_EMPTY,
-    MEMCPY_CRASH,
-    EXCEPTION_UNEXPECTED_VALUE_TYPE,
-    UNKNOWN_EXPRESSION,
-    NUMBER_READING_ERROR,
-    INVALID_STRING,
-    IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH,
+    EXPR_IS_INVALID                                = 1 << 2,
+    BUFFER_IS_NULL                                 = 1 << 3,
+    STREAM_IS_NULL                                 = 1 << 4,
+    PTR_IS_NULL                                    = 1 << 5,
+    FILESIZE_IS_ZERO                               = 1 << 6,
+    BUFFER_CANT_BE_READ                            = 1 << 7,
+    FUCK_MY_LIFE                                   = 1 << 8,
+    PTR_BIGGER_BUFF_END                            = 1 << 9,
+    MAX_EXPR_ELEM_LEN_REACHED                      = 1 << 10,
+    EXPR_ELEM_IS_EMPTY                             = 1 << 11,
+    MEMCPY_CRASH                                   = 1 << 12,
+    EXCEPTION_UNEXPECTED_VALUE_TYPE                = 1 << 13,
+    UNKNOWN_EXPRESSION                             = 1 << 14,
+    NUMBER_READING_ERROR                           = 1 << 15,
+    INVALID_STRING                                 = 1 << 16,
+    IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH = 1 << 17,
 
 };
 

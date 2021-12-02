@@ -24,6 +24,4 @@
 
 #define PRINT_SM(s, n) do{ fprintf(OUT, "[%d] = %.*s\n", __LINE__, n s);                                          }while(0);
 
-#undef  OUT
-
 #endif

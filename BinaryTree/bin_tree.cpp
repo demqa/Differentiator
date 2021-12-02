@@ -297,7 +297,25 @@ static void PrintNode     (const Node_t *node, const size_t *number_of_node, con
 
     fprintf(dump_file, "    label=\"");
 
-    fprintf(dump_file, "%x", node->value);
+    if (node->value == nullptr)
+    {
+        fprintf(dump_file, "empty");
+    }
+    else
+    if (node->value->type == OPER_TYPE)
+    {
+        fprintf(dump_file, "OPER %c", node->value->oper);
+    }
+    else
+    if (node->value->type == NUM_TYPE)
+    {
+        fprintf(dump_file, "NUM %lg", node->value->num);
+    }
+    else
+    if (node->value->type == VAR_TYPE)
+    {
+        fprintf(dump_file, "VAR %c", node->value->var);
+    }
     // TODO
     // FUNC PRINT_VALUE_DUMP
     // IT CAN BE STORED IN TREE
