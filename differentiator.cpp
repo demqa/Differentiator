@@ -187,7 +187,6 @@ int ProceedNodeValue  (char **ptr, Node_t *node)
     char *string = (char *) calloc(MAX_EXPR_ELEM_LEN + 1, sizeof(char));
     if (string == nullptr) status |= BAD_ALLOC;
 
-    PRINT_C(**ptr);
     status |= GetString(ptr, string);
     if (status) return status;
 
@@ -218,31 +217,25 @@ int TreeReadProcessing(Tree_t *tree, Node_t *node, char **ptr, char *end_ptr)
 
     while (*ptr <= end_ptr)
     {
-        PRINT_C(**ptr);
         if (**ptr == '(')
         {
             (*ptr)++;
-
-            PRINT_PTR(node);
 
             if (node == nullptr)
             {
                 NodeInsert(tree, node, L_CHILD, nullptr);
                 node = tree->root;
-                PRINT_PTR(node);
             }
             else
             if (node->left == nullptr)
             {
                 NodeInsert(tree, node, L_CHILD, nullptr);
                 node = node->left;
-                PRINT_PTR(node);
             }
             else
             {
                 NodeInsert(tree, node, R_CHILD, nullptr);
                 node = node->right;
-                PRINT_PTR(node);
             }
 
             if (**ptr == '(' || **ptr == ')')
@@ -393,7 +386,7 @@ int DiffNodes(Node_t *node, Node_t **diff, const char variable)
     return status;
 }
 
-int CopyNodes(Node_t *node, Node_t **copy)
+int CopyNodes(Node_t *node, Node_t **copy, Node_t *parent)
 {
     if (node == nullptr)                     return NODE_PTR_IS_NULL;
 
@@ -402,8 +395,10 @@ int CopyNodes(Node_t *node, Node_t **copy)
     // i have to save these ptr's or 
     // do some func that will free
     // this memory when it won't be used no more
-    Node_t *new_node = (Node_t *) calloc(1, sizeof(node));
+    Node_t *new_node = (Node_t *) calloc(1, sizeof(Node_t));
     if (new_node == nullptr) return BAD_ALLOC;
+
+    new_node->parent = parent;
 
     RT *arg = (RT *) calloc(1, sizeof(RT));
     if (arg == nullptr)      return BAD_ALLOC;
@@ -415,10 +410,10 @@ int CopyNodes(Node_t *node, Node_t **copy)
 
     int status = FUNC_IS_OK;
     if (node->left  != nullptr)
-        status |= CopyNodes(node->left,  &new_node->left);
+        status |= CopyNodes(node->left,  &new_node->left,  new_node);
 
     if (node->right != nullptr)
-        status |= CopyNodes(node->right, &new_node->right);
+        status |= CopyNodes(node->right, &new_node->right, new_node);
 
     *copy = new_node;
 
@@ -465,7 +460,17 @@ int main()
 
     status |= TreeDump(&tree);
     if (status) fprintf(stderr, "status = %d\n", status);
+
+    Node_t *copy = nullptr;
+
+    status |= CopyNodes(tree.root, &copy, nullptr);
+    if (status) fprintf(stderr, "status = %d\n", status);
+
+    tree.root = copy;
     
+    status |= TreeDump(&tree);
+    if (status) fprintf(stderr, "status = %d\n", status);
+
     // i lose so many allocated memory...
 
     TreeDtor(&tree);

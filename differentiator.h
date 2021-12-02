@@ -25,9 +25,9 @@ enum IsConstStatus
 enum DifferentiatorStatus
 {
     // statuses
-    DEAD_INSIDE = 0,
-    FUNC_IS_OK  = 0,
-    TILT        = 1,
+    DEAD_INSIDE      = 0,
+    FUNC_IS_OK       = 0,
+    TILT             = 1,
 
     // errors
     EXPR_IS_INVALID                                = 1 << 2,
