@@ -22,6 +22,13 @@ enum IsConstStatus
     VARIABLE         = 2,
 };
 
+const char SIN = 's';
+const char COS = 'c';
+const char LN  = 'l';
+const char LG  = 'g';
+const char SH  = 'w';
+const char CH  = 'h';
+
 enum DifferentiatorStatus
 {
     // statuses
@@ -30,23 +37,23 @@ enum DifferentiatorStatus
     TILT             = 1,
 
     // errors
-    EXPR_IS_INVALID                                = 1 << 2,
-    BUFFER_IS_NULL                                 = 1 << 3,
-    STREAM_IS_NULL                                 = 1 << 4,
-    PTR_IS_NULL                                    = 1 << 5,
-    FILESIZE_IS_ZERO                               = 1 << 6,
-    BUFFER_CANT_BE_READ                            = 1 << 7,
-    FUCK_MY_LIFE                                   = 1 << 8,
-    PTR_BIGGER_BUFF_END                            = 1 << 9,
-    MAX_EXPR_ELEM_LEN_REACHED                      = 1 << 10,
-    EXPR_ELEM_IS_EMPTY                             = 1 << 11,
-    MEMCPY_CRASH                                   = 1 << 12,
-    EXCEPTION_UNEXPECTED_VALUE_TYPE                = 1 << 13,
-    UNKNOWN_EXPRESSION                             = 1 << 14,
-    NUMBER_READING_ERROR                           = 1 << 15,
-    INVALID_STRING                                 = 1 << 16,
-    IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH = 1 << 17,
-    PARENT_IS_NULL                                 = 1 << 18,
+    EXPR_IS_INVALID                                  = 1 << 2,
+    BUFFER_IS_NULL                                   = 1 << 3,
+    STREAM_IS_NULL                                   = 1 << 4,
+    PTR_IS_NULL                                      = 1 << 5,
+    FILESIZE_IS_ZERO                                 = 1 << 6,
+    BUFFER_CANT_BE_READ                              = 1 << 7,
+    FUCK_MY_LIFE                                     = 1 << 8,
+    PTR_BIGGER_BUFF_END                              = 1 << 9,
+    MAX_EXPR_ELEM_LEN_REACHED                        = 1 << 10,
+    EXPR_ELEM_IS_EMPTY                               = 1 << 11,
+    MEMCPY_CRASH                                     = 1 << 12,
+    EXCEPTION_UNEXPECTED_VALUE_TYPE                  = 1 << 13,
+    UNKNOWN_EXPRESSION                               = 1 << 14,
+    NUMBER_READING_ERROR                             = 1 << 15,
+    INVALID_STRING                                   = 1 << 16,
+    IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH   = 1 << 17,
+    PARENT_IS_NULL                                   = 1 << 18,
     INVALID_OPERATOR,
 
 };

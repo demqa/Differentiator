@@ -100,81 +100,92 @@ int GetArg    (char *string, RT *arg)
 
     if (length == 0) return INVALID_STRING;
 
-    if (length == 1 && IsCharOper(string[0]))
-    {
-        arg->type = OPER_TYPE;
-        arg->oper = string[0];
-        // arg->subtree_status = NOT_CALCULATED;
-    }
-    else
-    if (length == 1 && 'a' < string[0] && string[0] < 'z')
-    {
-        arg->type = VAR_TYPE;
-        arg->var  = string[0];
-        // arg->subtree_status = VARIABLE;
-    }
-    else
-    if (length == 2 && strcmp(string, "ln") == 0)
-    {
-        fprintf(stderr, "I can't do this yet %s\n", string);
-        return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
-    }
-    else
-    if (length == 2 && strcmp(string, "lg") == 0)
-    {
-        fprintf(stderr, "I can't do this yet %s\n", string);
-        return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
-    }
-    else
-    if (length == 2 && strcmp(string, "sh") == 0)
-    {
-        fprintf(stderr, "I can't do this yet %s\n", string);
-        return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
-    }
-    else
-    if (length == 2 && strcmp(string, "ch") == 0)
-    {
-        fprintf(stderr, "I can't do this yet %s\n", string);
-        return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
-    }
-    else
-    if (length == 3 && strcmp(string, "sin") == 0)
-    {
-        fprintf(stderr, "I can't do this yet %s\n", string);
-        return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
-    }
-    else
-    if (length == 3 && strcmp(string, "cos") == 0)
-    {
-        fprintf(stderr, "I can't do this yet %s\n", string);
-        return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
-    }
-    else
-    {
-        int flag = 1;
-        for (size_t i = 0; i < length; i++)
-            if ((string[i] > '9' || string[i] < '0') && string[i] != '.')
-                flag = 0;
+    double num = NAN;
 
-        assert('0' < '9');
-
-        if (flag)
+    if (sscanf(string, "%lf", &num) == 1)
+    {           
+        arg->type = NUM_TYPE;
+        arg->num  = num;
+        // arg->subtree_status = CONST;
+    }
+    else
+    if (length == 1)
+    {
+        if (IsCharOper(string[0]))
         {
-            double num = NAN;
-            if (sscanf(string, "%lf", &num) == 1)
-            {           
-                arg->type = NUM_TYPE;
-                arg->num  = num;
-                // arg->subtree_status = CONST;
-            }
-            else
-                return NUMBER_READING_ERROR;
+            arg->type = OPER_TYPE;
+            arg->oper = string[0];
+        // arg->subtree_status = NOT_CALCULATED;
+        }
+        else
+        if ('a' < string[0] && string[0] < 'z')
+        {
+            arg->type = VAR_TYPE;
+            arg->var  = string[0];
+            // arg->subtree_status = VARIABLE;
         }
         else
         {
             fprintf(stderr, "UNKNOWN EXPRESSION %s\n", string);
             return UNKNOWN_EXPRESSION;
         }
+    }
+    else
+    if (length == 2)
+    {
+        if(strcmp(string, "ln") == 0)
+        {
+            fprintf(stderr, "I can't do this yet %s\n", string);
+            return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
+        }
+        else
+        if (strcmp(string, "lg") == 0)
+        {
+            fprintf(stderr, "I can't do this yet %s\n", string);
+            return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
+        }
+        else
+        if (strcmp(string, "sh") == 0)
+        {
+            fprintf(stderr, "I can't do this yet %s\n", string);
+            return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
+        }
+        else
+        if (strcmp(string, "ch") == 0)
+        {
+            fprintf(stderr, "I can't do this yet %s\n", string);
+            return IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH;
+        }
+        else
+        {
+            fprintf(stderr, "UNKNOWN EXPRESSION %s\n", string);
+            return UNKNOWN_EXPRESSION;
+        }
+    }
+    else
+    if (length == 3)
+    {   
+
+        if (strcmp(string, "sin") == 0)
+        {
+
+        }
+        else
+        if (strcmp(string, "cos") == 0)
+        {
+
+        }
+        else
+        {
+            fprintf(stderr, "UNKNOWN EXPRESSION %s\n", string);
+            return UNKNOWN_EXPRESSION;
+        }
+
+    }
+    else
+    {
+        fprintf(stderr, "UNKNOWN EXPRESSION %s\n", string);
+        return UNKNOWN_EXPRESSION;
     }
 
     return FUNC_IS_OK;
@@ -375,19 +386,41 @@ do                                               \
 #define ARG_ASSIGN(NODE, ARG)                                     \
     NODE->value = ARG;
 
-#define NUM_INIT(ARG, NUM) \
-do                          \
-{                            \
+#define NUM__INIT(ARG, NUM) \
+do                           \
+{                             \
     assert(ARG->type == 0 && ARG->oper == 0 && ARG->num == 0 && ARG->var == 0); \
-    ARG->type = NUM_TYPE;      \
-    ARG->num  = NUM;            \
+    ARG->type = NUM_TYPE;       \
+    ARG->num  = NUM;             \
 } while (0);
 
-#define ZERO_INIT(ARG) NUM_INIT(ARG, 0);
-#define ONE__INIT(ARG) NUM_INIT(ARG, 1);
+#define ZERO_INIT(ARG) NUM__INIT(ARG, 0);
+#define ONE__INIT(ARG) NUM__INIT(ARG, 1);
 
 #define LEFT  node->left
 #define RIGHT node->right
+
+#define OP_NODE_INIT(OP, AP, PAR, SIDE)  \
+    NODE_INIT(new_ ## AP, new_ ## PAR);   \
+    ARG__INIT(arg_ ## AP);                 \
+    OPER_INIT(arg_ ## AP, OP);              \
+    ARG_ASSIGN(new_ ## AP, arg_ ## AP);      \
+    (new_ ## PAR)->SIDE  = (new_ ## AP);          
+
+#define NUM_NODE_INIT(NUM, AP, PAR, SIDE)       \
+    NODE_INIT(new_ ## AP, new_ ## PAR);          \
+    ARG__INIT(arg_ ## AP);                        \
+    NUM__INIT(arg_ ## AP, NUM);                    \
+    ARG_ASSIGN(new_ ## AP, arg_ ## AP);             \
+    (new_ ## PAR)->SIDE  = (new_ ## AP);
+
+#define DIFF(FROM, DEST, SIDE)                         \
+    status |= DiffNodes(FROM, &(new_ ## DEST)->SIDE, new_ ## DEST, variable);
+
+#define COPY(FROM, DEST, SIDE)                            \
+    status |= CopyNodes(FROM, &(new_ ## DEST)->SIDE, new_ ## DEST);
+
+
 
 int CopyNodes(Node_t *node, Node_t **copy, Node_t *parent);
 
@@ -437,30 +470,69 @@ int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable)
         {
             OPER_INIT(new_arg, '+');
 
-            NODE_INIT(new_left, new_node);
-            ARG__INIT(arg_left);
-            OPER_INIT(arg_left, '*');
-            ARG_ASSIGN(new_left, arg_left);
+            OP_NODE_INIT('*', L, node, left);
 
-            status |= DiffNodes(LEFT,  &new_left->left,  new_left, variable);
-            status |= CopyNodes(RIGHT, &new_left->right, new_left);
+            DIFF(LEFT,  L, left);
+            COPY(RIGHT, L, right);
 
-            NODE_INIT(new_right, new_node);
-            ARG__INIT(arg_right);
-            OPER_INIT(arg_right, '*');
-            ARG_ASSIGN(new_right, arg_right);
-
-            status |= CopyNodes(LEFT,  &new_right->left,  new_right);
-            status |= DiffNodes(RIGHT, &new_right->right, new_right, variable);
-
-            new_node->left  = new_left;
-            new_node->right = new_right;
+            OP_NODE_INIT('*', R, node, right);
+            
+            COPY(LEFT,  R, left);
+            DIFF(RIGHT, R, right);
         }
 
         if (arg->oper == '/')
         {
-            // TODO
-            assert(false && "I cant do this(");
+            OPER_INIT(new_arg, arg->oper);
+
+            OP_NODE_INIT('-', L, node, left);
+
+            OP_NODE_INIT('*', LL, L, left);
+            DIFF(LEFT,  LL, left);
+            COPY(RIGHT, LL, right);
+
+            OP_NODE_INIT('*', LR, L, right);
+            COPY(LEFT,  LR, left);
+            DIFF(RIGHT, LR, right);
+
+            OP_NODE_INIT('^', R, node, right);
+            COPY(RIGHT, R, left);
+
+            NUM_NODE_INIT(2, RR, R, right);
+        }
+
+        if (arg->oper == '^') // f(x)^const
+        {
+            OPER_INIT(new_arg, '*');
+
+            OP_NODE_INIT('*', L, node, left);
+
+            COPY(RIGHT, L, left);
+
+            OP_NODE_INIT('^', LR, L, right);
+
+            COPY(LEFT, LR, left);
+
+            OP_NODE_INIT('-', LRR, LR, right);
+            COPY(RIGHT, LRR, left);
+            NUM_NODE_INIT(1, LRRR, LRR, right);
+
+            DIFF(LEFT, node, right);
+        }
+
+        if (arg->oper == SIN)
+        {
+
+        }
+
+        if (arg->oper == COS)
+        {
+
+        }
+
+        if (arg->oper == LN)
+        {
+
         }
     }
     else
@@ -493,20 +565,6 @@ int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable)
 
     *diff = new_node;
 
-    // fprintf(stderr, "exit:\n");
-    // if (new_node->value == nullptr)
-    //     fprintf(stderr, "empty\n");
-    // else
-    // if (new_node->value->type == OPER_TYPE)
-    //     fprintf(stderr, "OPER %c\n", new_node->value->oper);
-    // else
-    // if (new_node->value->type == NUM_TYPE)
-    //     fprintf(stderr, "NUM %lg\n", new_node->value->num);
-    // else
-    // if (new_node->value->type == VAR_TYPE)
-    //     fprintf(stderr, "VAR %c\n",  new_node->value->var);
-    // fprintf(stderr, "\n");
-
     return status;
 }
 
@@ -521,7 +579,6 @@ int CopyNodes(Node_t *node, Node_t **copy, Node_t *parent)
     // this memory when it won't be used no more
     Node_t *new_node = (Node_t *) calloc(1, sizeof(Node_t));
     if (new_node == nullptr) return BAD_ALLOC;
-
     new_node->parent = parent;
 
     RT *arg = (RT *) calloc(1, sizeof(RT));
