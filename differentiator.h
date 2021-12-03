@@ -46,6 +46,8 @@ enum DifferentiatorStatus
     NUMBER_READING_ERROR                           = 1 << 15,
     INVALID_STRING                                 = 1 << 16,
     IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH = 1 << 17,
+    PARENT_IS_NULL                                 = 1 << 18,
+    INVALID_OPERATOR,
 
 };
 

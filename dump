@@ -1,24 +1,16 @@
 digraph structs {
     node [color=black, shape=box, style="filled"];
-    node0 [fillcolor="#f4a1f7",     label="OPER *"];
+    node0 [fillcolor="#f4a1f7",     label="OPER +"];
     edge [color="#3cf71b"]; node0 -> node1;
-    node1 [fillcolor="#63e69e",     label="OPER +"];
+    node1 [fillcolor="#63e69e",     label="OPER *"];
     edge [color="#3cf71b"]; node1 -> node2;
-    node2 [fillcolor="#5ebfff",     label="VAR x"];
+    node2 [fillcolor="#5ebfff",     label="NUM 1"];
     edge [color="#ff0000"]; node1 -> node3;
     node3 [fillcolor="#5ebfff",     label="NUM 3"];
     edge [color="#ff0000"]; node0 -> node4;
-    node4 [fillcolor="#63e69e",     label="OPER /"];
+    node4 [fillcolor="#63e69e",     label="OPER *"];
     edge [color="#3cf71b"]; node4 -> node5;
-    node5 [fillcolor="#63e69e",     label="OPER *"];
-    edge [color="#3cf71b"]; node5 -> node6;
-    node6 [fillcolor="#5ebfff",     label="NUM 2"];
-    edge [color="#ff0000"]; node5 -> node7;
-    node7 [fillcolor="#5ebfff",     label="VAR x"];
-    edge [color="#ff0000"]; node4 -> node8;
-    node8 [fillcolor="#63e69e",     label="OPER -"];
-    edge [color="#3cf71b"]; node8 -> node9;
-    node9 [fillcolor="#5ebfff",     label="NUM 12"];
-    edge [color="#ff0000"]; node8 -> node10;
-    node10 [fillcolor="#5ebfff",     label="NUM 20"];
+    node5 [fillcolor="#5ebfff",     label="VAR x"];
+    edge [color="#ff0000"]; node4 -> node6;
+    node6 [fillcolor="#5ebfff",     label="NUM 0"];
 }

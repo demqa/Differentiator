@@ -354,34 +354,158 @@ int IsZero (Node_t *node) /*Is Subtree Zero*/
     return 0;
 }
 
-int DiffNodes(Node_t *node, Node_t **diff, const char variable)
+#define OPER_INIT(ARG, OPER)                    \
+do                                               \
+{                                                 \
+    assert(ARG->type == 0 && ARG->oper == 0 && ARG->num == 0 && ARG->var == 0); \
+    ARG->type = OPER_TYPE;                          \
+    ARG->oper = OPER;                                \
+                                                      \
+}while (0);
+
+#define NODE_INIT(NAME, PARENT)                          \
+    Node_t *NAME = (Node_t *) calloc(1, sizeof(Node_t));  \
+    if (NAME == nullptr) return BAD_ALLOC;                 \
+    NAME->parent = PARENT;
+
+#define ARG__INIT(NAME)                                       \
+    RT *NAME = (RT *) calloc(1, sizeof(RT));                   \
+    if (NAME == nullptr) return BAD_ALLOC;
+
+#define ARG_ASSIGN(NODE, ARG)                                     \
+    NODE->value = ARG;
+
+#define NUM_INIT(ARG, NUM) \
+do                          \
+{                            \
+    assert(ARG->type == 0 && ARG->oper == 0 && ARG->num == 0 && ARG->var == 0); \
+    ARG->type = NUM_TYPE;      \
+    ARG->num  = NUM;            \
+} while (0);
+
+#define ZERO_INIT(ARG) NUM_INIT(ARG, 0);
+#define ONE__INIT(ARG) NUM_INIT(ARG, 1);
+
+#define LEFT  node->left
+#define RIGHT node->right
+
+int CopyNodes(Node_t *node, Node_t **copy, Node_t *parent);
+
+int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable)
 {
     if (node == nullptr)                     return NODE_PTR_IS_NULL;
 
     if (diff == nullptr || *diff != nullptr) return PTR_IS_NULL;
 
-    Node_t *new_node = (Node_t *) calloc(1, sizeof(Node_t));
-    if (new_node == nullptr) return BAD_ALLOC;
+    NODE_INIT(new_node, parent);
 
+    if (node->value == nullptr)
+    {
+        assert(false && "I shoudn't be there yet");
+
+        assert(NodeIsTerminal(node) == NODE_IS_TERMINAL);
+        // maybe there will be some shit, but I didn't understand this yet
+        return FUNC_IS_OK;
+    }
+        
     RT *arg = node->value;
 
     int status = FUNC_IS_OK;
+
+    ARG__INIT(new_arg);
+
+    ARG_ASSIGN(new_node, new_arg);
+
     if (arg->type == OPER_TYPE)
     {
+        if (!IsCharOper(arg->oper))
+            return INVALID_OPERATOR;
 
+        assert(NodeIsTerminal(node) != NODE_IS_TERMINAL);
+
+        assert(arg->num == 0 && arg->var == 0);
+
+        if (arg->oper == '+' || arg->oper == '-')
+        {
+            OPER_INIT(new_arg, arg->oper);
+            
+            status |= DiffNodes(LEFT,  &new_node->left,  new_node, variable);
+            status |= DiffNodes(RIGHT, &new_node->right, new_node, variable);
+        }
+
+        if (arg->oper == '*')
+        {
+            OPER_INIT(new_arg, '+');
+
+            NODE_INIT(new_left, new_node);
+            ARG__INIT(arg_left);
+            OPER_INIT(arg_left, '*');
+            ARG_ASSIGN(new_left, arg_left);
+
+            status |= DiffNodes(LEFT,  &new_left->left,  new_left, variable);
+            status |= CopyNodes(RIGHT, &new_left->right, new_left);
+
+            NODE_INIT(new_right, new_node);
+            ARG__INIT(arg_right);
+            OPER_INIT(arg_right, '*');
+            ARG_ASSIGN(new_right, arg_right);
+
+            status |= CopyNodes(LEFT,  &new_right->left,  new_right);
+            status |= DiffNodes(RIGHT, &new_right->right, new_right, variable);
+
+            new_node->left  = new_left;
+            new_node->right = new_right;
+        }
+
+        if (arg->oper == '/')
+        {
+            // TODO
+            assert(false && "I cant do this(");
+        }
     }
     else
     if (arg->type == NUM_TYPE)
     {
+        assert(NodeIsTerminal(node) == NODE_IS_TERMINAL);
 
+        assert(arg->oper == 0 && arg->var == 0);
+
+        ZERO_INIT(new_arg);
     }
     else
     if (arg->type == VAR_TYPE)
     {
+        assert(NodeIsTerminal(node) == NODE_IS_TERMINAL);
 
-    }
+        assert(arg->oper == 0 && arg->num == 0);
+
+        if (arg->var == variable)
+        {
+            ONE__INIT(new_arg);
+        }
+        else
+        {
+            ZERO_INIT(new_arg);
+        }
+    }   
     else
         return EXCEPTION_UNEXPECTED_VALUE_TYPE;
+
+    *diff = new_node;
+
+    // fprintf(stderr, "exit:\n");
+    // if (new_node->value == nullptr)
+    //     fprintf(stderr, "empty\n");
+    // else
+    // if (new_node->value->type == OPER_TYPE)
+    //     fprintf(stderr, "OPER %c\n", new_node->value->oper);
+    // else
+    // if (new_node->value->type == NUM_TYPE)
+    //     fprintf(stderr, "NUM %lg\n", new_node->value->num);
+    // else
+    // if (new_node->value->type == VAR_TYPE)
+    //     fprintf(stderr, "VAR %c\n",  new_node->value->var);
+    // fprintf(stderr, "\n");
 
     return status;
 }
@@ -420,7 +544,7 @@ int CopyNodes(Node_t *node, Node_t **copy, Node_t *parent)
     return status;
 }
 
-int Differentiate(Tree_t *tree, Tree_t **tree_res)
+int Differentiate(Tree_t *tree, Tree_t **tree_res, const char variable)
 {
     if (tree == nullptr)  return TREE_IS_NULL;
 
@@ -432,9 +556,13 @@ int Differentiate(Tree_t *tree, Tree_t **tree_res)
     Tree_t *new_tree = (Tree_t *) calloc(1, sizeof(Tree_t));
     if (new_tree == nullptr) return BAD_ALLOC;
 
+    TreeCtor(new_tree);
+
+    int status = FUNC_IS_OK;
+
     // tree->size doesnt work now
-
-
+    status |= DiffNodes(tree->root, &new_tree->root, nullptr, variable);
+    
     return 0;
 }
 
@@ -456,20 +584,20 @@ int main()
     char *buffer = nullptr;
 
     status |= TreeFill(&tree, stream, &buffer);
-    if (status) fprintf(stderr, "status = %d\n", status);
+    if (status) PRINT_D(status);
 
-    status |= TreeDump(&tree);
-    if (status) fprintf(stderr, "status = %d\n", status);
+    // status |= TreeDump(&tree);
+    // if (status) PRINT_D(status);
 
-    Node_t *copy = nullptr;
+    Node_t *diff = nullptr;
 
-    status |= CopyNodes(tree.root, &copy, nullptr);
-    if (status) fprintf(stderr, "status = %d\n", status);
+    status |= DiffNodes(tree.root, &diff, nullptr, 'x');
+    if (status) PRINT_D(status);
 
-    tree.root = copy;
+    tree.root = diff;
     
     status |= TreeDump(&tree);
-    if (status) fprintf(stderr, "status = %d\n", status);
+    if (status) PRINT_D(status);
 
     // i lose so many allocated memory...
 

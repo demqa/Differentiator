@@ -382,7 +382,8 @@ static TreeStatus NodeDump(const Node_t *node, size_t *number_of_node, FILE *dum
 
 TreeStatus TreeDump(Tree_t *tree)
 {
-    int status = TreeVerify(tree);
+    int status = 0;
+    // int status = TreeVerify(tree);
     if (status && (status & (1 << 9 - 1)) == 0)
     {
         fprintf(TREE_LOG_FILE_DEFAULT, "CANT DUMP, TREE IS RUINED\n");

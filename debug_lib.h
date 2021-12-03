@@ -12,7 +12,7 @@
 
 #define PRINT_C(char)  do{ fprintf(OUT, "[%s:%lu] %s = %c\n", __PRETTY_FUNCTION__, __LINE__, #char, char);        }while(0);
 
-#define PRINT_S(str)   do{ fprintf(OUT, "[%s:%lu] %s = %s\n", __PRETTY_FUNCTION__, __LINE__, #str, str);          }while(0);
+#define PRINT_S(str)   do{ fprintf(OUT, "[%s:%lu] %s = %s\n", __PRETTY_FUNCTION__, __LINE__, #str, #str);          }while(0);
 
 #define PRINT(str)     do{ fprintf(OUT, "%s\n", #str); }while(0);
 
