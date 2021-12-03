@@ -4,6 +4,8 @@
 
 #include <assert.h>
 
+#include "../differentiator.h"
+
 enum ValueType
 {
     OPER_TYPE = 1,
@@ -32,11 +34,15 @@ const Value_t DEAD_VAL = nullptr;
 
 const size_t COLOR_MAX_LEN = 7 + 1;
 
-const char root_color    [COLOR_MAX_LEN] = "#f4a1f7";
-const char terminal_color[COLOR_MAX_LEN] = "#5ebfff";
-const char default_color [COLOR_MAX_LEN] = "#63e69e";
+const char left_color    [COLOR_MAX_LEN] = "#7100c7";
+const char right_color   [COLOR_MAX_LEN] = "#7100c7";
 
-const char left_color    [COLOR_MAX_LEN] = "#3cf71b";
-const char right_color   [COLOR_MAX_LEN] = "#ff0000";
+const char colors[][COLOR_MAX_LEN] =
+{
+    "#ff002f",
+    "#f6fa00",
+    "#14d4ff",
+    "#00ed14",
+};
 
 #endif

@@ -5,6 +5,7 @@
 #include <math.h>
 
 #include "BinaryTree/bin_tree.h"
+#include "MemoryDefender/memory_defender.h"
 
 #include "differentiator_config.h"
 
@@ -22,6 +23,11 @@ enum IsConstStatus
     VARIABLE         = 2,
 };
 
+const char ADD = '+';
+const char SUB = '-';
+const char MUL = '*';
+const char DIV = '/';
+const char POW = '^';
 const char SIN = 's';
 const char COS = 'c';
 const char LN  = 'l';
@@ -54,7 +60,8 @@ enum DifferentiatorStatus
     INVALID_STRING                                   = 1 << 16,
     IM_LITTLE_PROGRAM_DONT_SCARE_ME_WITH_THIS_MATH   = 1 << 17,
     PARENT_IS_NULL                                   = 1 << 18,
-    INVALID_OPERATOR,
+    INVALID_OPERATOR                                 = 1 << 19,
+    NODE_VALUE_IS_NULL                               = 1 << 20,
 
 };
 

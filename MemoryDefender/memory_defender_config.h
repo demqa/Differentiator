@@ -2,6 +2,6 @@
 
 #define MEMORY_DEFENDER_CONFIG_H
 
-const size_t MAX_ALLOCS = 20;
+const size_t MAX_ALLOCS = 1488;
 
 #endif

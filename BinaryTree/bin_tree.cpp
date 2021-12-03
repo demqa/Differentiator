@@ -288,12 +288,19 @@ do{                                               \
 
 FILE *TREE_LOG_FILE_DEFAULT = stderr;
 
-static void PrintNode     (const Node_t *node, const size_t *number_of_node, const char color[COLOR_MAX_LEN], FILE *dump_file)
+#define CASE(OP)                                            \
+    case OP:                                                 \
+        fprintf(dump_file, "%s", #OP);                        \
+        break;
+
+static void PrintNode     (const Node_t *node, const size_t *number_of_node, FILE *dump_file)
 {
-    if (node == nullptr || number_of_node == nullptr || color == nullptr || dump_file == nullptr)
+    if (node == nullptr || number_of_node == nullptr || dump_file == nullptr)
         return;
     
-    fprintf(dump_file, "    node%lu [fillcolor=\"%s\", ", *number_of_node, color);
+    char num = 0;
+    if (node->value) num = node->value->type % 4;
+    fprintf(dump_file, "    node%lu [fillcolor=\"%s\", ", *number_of_node, colors[num]);
 
     fprintf(dump_file, "    label=\"");
 
@@ -304,17 +311,49 @@ static void PrintNode     (const Node_t *node, const size_t *number_of_node, con
     else
     if (node->value->type == OPER_TYPE)
     {
-        fprintf(dump_file, "OPER %c", node->value->oper);
+        switch (node->value->oper)
+        {
+            case MUL:
+                fprintf(dump_file, "%c", node->value->oper);
+                break;
+
+            case SUB:
+                fprintf(dump_file, "%c", node->value->oper);
+                break;
+
+            case ADD:
+                fprintf(dump_file, "%c", node->value->oper);
+                break;
+            
+            case DIV:
+                fprintf(dump_file, "%c", node->value->oper);
+                break;
+
+            case POW:
+                fprintf(dump_file, "%c", node->value->oper);
+                break;
+            
+            CASE(SH);
+            CASE(CH);
+            CASE(SIN);
+            CASE(COS);
+            CASE(LN);
+            CASE(LG);
+
+            default:
+                fprintf(dump_file, "dead");
+                break;
+        }
     }
     else
     if (node->value->type == NUM_TYPE)
     {
-        fprintf(dump_file, "NUM %lg", node->value->num);
+        fprintf(dump_file, "%lg", node->value->num);
     }
     else
     if (node->value->type == VAR_TYPE)
     {
-        fprintf(dump_file, "VAR %c", node->value->var);
+        fprintf(dump_file, "%c", node->value->var);
     }
     // TODO
     // FUNC PRINT_VALUE_DUMP
@@ -347,19 +386,7 @@ static TreeStatus NodeDump(const Node_t *node, size_t *number_of_node, FILE *dum
 
     int status = NODE_IS_OK;
 
-    if (*number_of_node == 0)
-    {
-        PrintNode(node, number_of_node, root_color, dump_file);
-    }
-    else
-    if (NodeIsTerminal(node) == NODE_IS_TERMINAL)
-    {
-        PrintNode(node, number_of_node, terminal_color, dump_file);
-    }
-    else
-    {
-        PrintNode(node, number_of_node, default_color, dump_file);
-    }
+    PrintNode(node, number_of_node, dump_file);
 
     size_t current_number_of_node = *number_of_node;
 
@@ -382,9 +409,9 @@ static TreeStatus NodeDump(const Node_t *node, size_t *number_of_node, FILE *dum
 
 TreeStatus TreeDump(Tree_t *tree)
 {
-    int status = 0;
-    // int status = TreeVerify(tree);
-    if (status && (status & (1 << 9 - 1)) == 0)
+    // int status = 0;
+    int status = TreeVerify(tree);
+    if (status)
     {
         fprintf(TREE_LOG_FILE_DEFAULT, "CANT DUMP, TREE IS RUINED\n");
         
