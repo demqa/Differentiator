@@ -16,7 +16,7 @@ do{                                 \
     }                                   \
 }while(0);
 
-Node_t    *DEAD_PTR    = (Node_t *) (1000 - 7);
+Node_t    *DEAD_PTR    = (Node_t *) nullptr;
 size_t     DEAD_SIZE   = 1000 - 7;
 TreeStatus DEAD_STATUS = (TreeStatus) (1000 - 7);
 
@@ -284,13 +284,14 @@ do{                                               \
         fprintf(TREE_LOG_FILE_DEFAULT, #error_code); \
         fprintf(TREE_LOG_FILE_DEFAULT, "\n");         \
     }                                                  \
-}while(0);
+}                                                       \
+while(0)
 
 FILE *TREE_LOG_FILE_DEFAULT = stderr;
 
-#define CASE(OP)                                            \
-    case OP:                                                 \
-        fprintf(dump_file, "%s", #OP);                        \
+#define CASE(OP)                                             \
+    case OP:                                                  \
+        fprintf(dump_file, "%s", #OP);                         \
         break;
 
 static void PrintNode     (const Node_t *node, const size_t *number_of_node, FILE *dump_file)
@@ -298,11 +299,22 @@ static void PrintNode     (const Node_t *node, const size_t *number_of_node, FIL
     if (node == nullptr || number_of_node == nullptr || dump_file == nullptr)
         return;
     
-    char num = 0;
-    if (node->value) num = node->value->type % 4;
-    fprintf(dump_file, "    node%lu [fillcolor=\"%s\", ", *number_of_node, colors[num]);
+    char num = 0, oper = 0;
+    if (node->value)
+    {
+        num  = node->value->type % 4;
+        oper = node->value->oper;
+    }
+
+    if (num  == OPER_TYPE &&
+       (oper == ADD || oper == SUB || oper == DIV || oper == MUL || oper == POW))
+        num++;
+
+    fprintf(dump_file, "    node%lu [shape = %s, fillcolor=\"%s\", ", *number_of_node, shapes[num], colors[num]);
 
     fprintf(dump_file, "    label=\"");
+
+    // fprintf(dump_file, "%p", node->parent);
 
     if (node->value == nullptr)
     {

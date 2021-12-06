@@ -1,5 +1,4 @@
 #ifndef BIN_TREE_H
-
 #define BIN_TREE_H
 
 #include <stdio.h>
@@ -77,12 +76,13 @@ enum ChildNumeration
 
 TreeStatus TreeCtor      (Tree_t *tree);
 TreeStatus TreeIsEmpty   (Tree_t *tree);
-  
+
 TreeStatus TreeDtor      (Tree_t *tree);
 TreeStatus TreeIsDtored  (Tree_t *tree);
   
 TreeStatus NodeInsert    (Tree_t *tree, Node_t *node, const ChildNumeration n_child, const Value_t value);
 TreeStatus NodeRemove    (Tree_t *tree, Node_t *node);
+TreeStatus NodesDtor     (Node_t *node);
 
 TreeStatus NodeIsTerminal(const Node_t *node);
 
@@ -91,4 +91,4 @@ TreeStatus TreeVerify    (Tree_t *tree);
   
 TreeStatus TreeDump      (Tree_t *tree);
 
-#endif
+#endif // BIN_TREE_H

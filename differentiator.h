@@ -1,5 +1,4 @@
 #ifndef DIFFERENTIATOR_H
-
 #define DIFFERENTIATOR_H
 
 #include <math.h>
@@ -11,16 +10,23 @@
 
 // enum ValueType
 // {
-//     OPER_TYPE = 1,
+//     VAR_TYPE  = 1,
 //     NUM_TYPE  = 2,
-//     VAR_TYPE  = 3,
+//     OPER_TYPE = 3,
 // };
 
-enum IsConstStatus
+enum SubtreeStatus
 {
     NOT_CALCULATED   = 0,
-    CONST            = 1,
-    VARIABLE         = 2,
+    VARIABLE         = 1,
+
+    CONST            = 1 << 4,
+};
+
+enum Changes
+{
+    NO_CHANGES = 0,
+    YE_CHANGES = 1,
 };
 
 const char ADD = '+';
@@ -28,6 +34,7 @@ const char SUB = '-';
 const char MUL = '*';
 const char DIV = '/';
 const char POW = '^';
+
 const char SIN = 's';
 const char COS = 'c';
 const char LN  = 'l';
@@ -62,8 +69,8 @@ enum DifferentiatorStatus
     PARENT_IS_NULL                                   = 1 << 18,
     INVALID_OPERATOR                                 = 1 << 19,
     NODE_VALUE_IS_NULL                               = 1 << 20,
+    FLAG_IS_NULL                                     = 1 << 21,
 
 };
 
-#endif
-
+#endif // DIFFERENTIATOR_H

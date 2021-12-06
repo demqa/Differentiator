@@ -1,5 +1,6 @@
 #include "differentiator.h"
 #include "debug_lib.h"
+#include "diff_dsl.h"
 
 int Filesize  (FILE *stream, size_t *filesize)
 {
@@ -177,7 +178,7 @@ int GetArg    (char *string, RT *arg)
     return FUNC_IS_OK;
 }
 
-int ProceedNodeValue  (char **ptr, Node_t *node, MemoryDefender *def)
+int ProceedNodeValue  (char **ptr,   Node_t *node,                                MemoryDefender *def)
 {
     int status = FUNC_IS_OK;
 
@@ -204,7 +205,7 @@ int ProceedNodeValue  (char **ptr, Node_t *node, MemoryDefender *def)
     return status;
 }
 
-int TreeReadProcessing(Tree_t *tree, Node_t *node, char **ptr, char *end_ptr, MemoryDefender *def)
+int TreeReadProcessing(Tree_t *tree, Node_t *node,     char **ptr, char *end_ptr, MemoryDefender *def)
 {
     if (tree == nullptr)   return TREE_IS_NULL;
     
@@ -275,7 +276,7 @@ int TreeReadProcessing(Tree_t *tree, Node_t *node, char **ptr, char *end_ptr, Me
     return status;
 }
 
-int TreeRead          (Tree_t *tree, char *buffer, size_t buff_size, MemoryDefender *def)
+int TreeRead          (Tree_t *tree, char *buffer, size_t buff_size,              MemoryDefender *def)
 {
     if (tree == nullptr)   return TREE_IS_NULL;
 
@@ -311,7 +312,7 @@ int TreeRead          (Tree_t *tree, char *buffer, size_t buff_size, MemoryDefen
     return FUNC_IS_OK;
 }
 
-int TreeFill          (Tree_t *tree, FILE *stream, char **buff, MemoryDefender *def)
+int TreeFill          (Tree_t *tree, FILE *stream,     char **buff,               MemoryDefender *def)
 {
     if (tree == nullptr)   return TREE_IS_NULL;
 
@@ -353,7 +354,7 @@ int IsConst(Node_t *node, const char variable) /*Is Subtree Const*/
 
     if (node->value == nullptr)
     {
-        return CONST;
+        return NODE_VALUE_IS_NULL;
     }
 
     RT *arg = node->value;
@@ -366,12 +367,12 @@ int IsConst(Node_t *node, const char variable) /*Is Subtree Const*/
         {
             if (arg->type == NUM_TYPE || arg->type == OPER_TYPE && arg->oper != variable)
             {
-                arg->subtree_status = CONST;
+                arg->subtree_status |= CONST;
                 return CONST;
             }
             else
             {
-                arg->subtree_status = VARIABLE;
+                arg->subtree_status |= VARIABLE;
                 return VARIABLE;
             }
         }
@@ -383,7 +384,7 @@ int IsConst(Node_t *node, const char variable) /*Is Subtree Const*/
             else
                 assert(res == CONST);
 
-            arg->subtree_status = res;
+            arg->subtree_status |= res;
             return res;
         }
     }
@@ -405,105 +406,11 @@ int IsEqualNum(double x, double num)
     return IsZeroNum(x - num);
 }
 
-int IsZero (Node_t *node) /*Is Subtree Zero*/
-{
-    if (node == nullptr || node->value == nullptr) return 0;
+#define OP arg->oper
 
-    RT *arg = node->value;
-    if (NodeIsTerminal(node) == NODE_IS_TERMINAL)
-    {
-        assert(arg->type == NUM_TYPE);
-        if (IsZeroNum(arg->num))
-            return 1;
-        else
-            return 0;
-    }
+#define TYPE value->type
 
-    assert(arg->type == OPER_TYPE);
-    
-    if (arg->oper == MUL)
-    {   
-        assert(node->left && node->right);
-        if (node->left->value  && node->left->value->type  == NUM_TYPE && IsZeroNum(node->left->value->num) ||
-            node->right->value && node->right->value->type == NUM_TYPE && IsZeroNum(node->right->value->num))
-            return 1;
-    }
-    else
-    if (arg->oper == LN || arg->oper == LG)
-    {
-        assert(node->left);
-        if (node->left->value && node->left->value->type == NUM_TYPE && IsEqualNum(node->left->value->num, 1))
-            return 1;
-    }
-    else
-    if (arg->oper == DIV)
-    {
-        assert(node->left);
-        if (node->left->value && node->left->value->type == NUM_TYPE && IsZeroNum(node->left->value->num))
-            return 1;
-    }
-
-    int res = IsZero(node->left) + IsZero(node->right);
-    if (res) return 1;
-
-    return 0;
-}
-
-#define OPER_INIT(ARG, OPER)                    \
-do                                               \
-{                                                 \
-    assert(ARG->type == 0 && ARG->oper == 0 && ARG->num == 0 && ARG->var == 0); \
-    ARG->type = OPER_TYPE;                          \
-    ARG->oper = OPER;                                \
-                                                      \
-}while (0);
-
-#define NODE_INIT(NAME, PARENT)                          \
-    Node_t *NAME = (Node_t *) calloc(1, sizeof(Node_t));  \
-    if (NAME == nullptr) return BAD_ALLOC;                 \
-    NAME->parent = PARENT;
-
-#define ARG__INIT(NAME)                                       \
-    RT *NAME = (RT *) calloc(1, sizeof(RT));                   \
-    if (NAME == nullptr) return BAD_ALLOC;                      \
-    DefenderPush(def, (char *)NAME);
-
-#define ARG_ASSIGN(NODE, ARG)                                     \
-    NODE->value = ARG;
-
-#define NUM__INIT(ARG, NUM) \
-do                           \
-{                             \
-    assert(ARG->type == 0 && ARG->oper == 0 && ARG->num == 0 && ARG->var == 0); \
-    ARG->type = NUM_TYPE;       \
-    ARG->num  = NUM;             \
-} while (0);                      \
-
-#define ZERO_INIT(ARG) NUM__INIT(ARG, 0);
-#define ONE__INIT(ARG) NUM__INIT(ARG, 1);
-
-#define LEFT  node->left
-#define RIGHT node->right
-
-#define OP_NODE_INIT(OP, AP, PAR, SIDE)  \
-    NODE_INIT(new_ ## AP, new_ ## PAR);   \
-    ARG__INIT(arg_ ## AP);                 \
-    OPER_INIT(arg_ ## AP, OP);              \
-    ARG_ASSIGN(new_ ## AP, arg_ ## AP);      \
-    (new_ ## PAR)->SIDE  = (new_ ## AP);          
-
-#define NUM_NODE_INIT(NUM, AP, PAR, SIDE)       \
-    NODE_INIT(new_ ## AP, new_ ## PAR);          \
-    ARG__INIT(arg_ ## AP);                        \
-    NUM__INIT(arg_ ## AP, NUM);                    \
-    ARG_ASSIGN(new_ ## AP, arg_ ## AP);             \
-    (new_ ## PAR)->SIDE  = (new_ ## AP);
-
-#define DIFF(FROM, DEST, SIDE)                         \
-    status |= DiffNodes(FROM, &(new_ ## DEST)->SIDE, new_ ## DEST, variable, def);
-
-#define COPY(FROM, DEST, SIDE)                            \
-    status |= CopyNodes(FROM, &(new_ ## DEST)->SIDE, new_ ## DEST, def);
+#define NUM value->num
 
 int CopyNodes(Node_t *node, Node_t **copy, Node_t *parent, MemoryDefender *def);
 
@@ -526,12 +433,6 @@ int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable, 
     ARG_ASSIGN(new_node, new_arg);
 
     *diff = new_node;
-
-    if (IsConst(node, variable) == CONST)
-    {
-        ZERO_INIT(new_arg);
-        return FUNC_IS_OK;
-    }
 
     if (arg->type == OPER_TYPE)
     {
@@ -646,6 +547,9 @@ int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable, 
             }
             else
             {
+                NUM__INIT(new_arg, 0);
+                return status;
+                
                 assert(false && "WHAT THE HELL???");
             }
             
@@ -717,7 +621,7 @@ int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable, 
         }
     }
     else
-    if (arg->type == NUM_TYPE)
+    if (arg->type ==  NUM_TYPE)
     {
         assert(NodeIsTerminal(node) == NODE_IS_TERMINAL);
 
@@ -726,7 +630,7 @@ int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable, 
         ZERO_INIT(new_arg);
     }
     else
-    if (arg->type == VAR_TYPE)
+    if (arg->type ==  VAR_TYPE)
     {
         assert(NodeIsTerminal(node) == NODE_IS_TERMINAL);
 
@@ -758,6 +662,8 @@ int CopyNodes(Node_t *node, Node_t **copy, Node_t *parent, MemoryDefender *def)
     // this memory when it won't be used no more
     Node_t *new_node = (Node_t *) calloc(1, sizeof(Node_t));
     if (new_node == nullptr) return BAD_ALLOC;
+    // PRINT_PTR(new_node);
+
     new_node->parent = parent;
 
     RT *arg = (RT *) calloc(1, sizeof(RT));
@@ -808,6 +714,242 @@ int Differentiate(Tree_t *tree, Tree_t **tree_res, const char variable, MemoryDe
     return status;
 }
 
+double Eval(const char SIGN, double x, double y)
+{
+    switch (SIGN)
+    {
+        case ADD:
+            return x + y;
+        case MUL:
+            return x * y;
+        case SUB:
+            return x - y;
+        case POW:
+            return pow(x, y);
+        case DIV:
+            return x / y;
+        
+        default:
+            return NAN;
+    }
+}
+
+#define RECONNECT(SAVE, KILL)    \
+do                                \
+{                                  \
+    SAVE->parent = node->parent;    \
+    if (node->parent)                \
+    {                                 \
+        if (node->parent->left  == node) node->parent->left  = SAVE; \
+        if (node->parent->right == node) node->parent->right = SAVE;  \
+    }                                    \
+    else DefenderPush(def, (char *)node); \
+                                           \
+    NodesDtor(KILL);                        \
+                                             \
+    *flag = YE_CHANGES;                       \
+    *node_ = SAVE;                             \
+}                                               \
+while (0)
+
+#define ASSIGN_VALUE(NUMBER)                       \
+do                                                  \
+{                                                    \
+    arg->type = NUM_TYPE;                             \
+    arg->num  = NUMBER;                                \
+                                                        \
+    NodesDtor(LEFT);                                     \
+    NodesDtor(RIGHT);                                     \
+                                                           \
+    LEFT  = nullptr;                                        \
+    RIGHT = nullptr;                                         \
+                                                              \
+    *flag = YE_CHANGES;                                        \
+}                                                               \
+while (0)
+
+int SimplifyNodesNum(Node_t *node, int *flag)
+{
+    if (node == nullptr)        return NODE_PTR_IS_NULL;
+           
+    if (flag == nullptr)        return FLAG_IS_NULL;
+ 
+    if (node->value == nullptr) return NODE_VALUE_IS_NULL;
+    
+    int status = FUNC_IS_OK;
+
+    RT *arg = node->value;
+
+    if (arg->type == OPER_TYPE &&
+        LEFT  && LEFT->TYPE  == NUM_TYPE &&
+        RIGHT && RIGHT->TYPE == NUM_TYPE)
+    {
+        ASSIGN_VALUE(Eval(OP, LEFT->NUM, RIGHT->NUM));
+    }
+
+    if (LEFT)  status |= SimplifyNodesNum(LEFT,  flag);
+    if (RIGHT) status |= SimplifyNodesNum(RIGHT, flag);
+
+    return status;
+}
+
+int SimplifyNodesUniq (Node_t **node_, int *flag, MemoryDefender *def)
+{
+    if (node_ == nullptr || node_ == nullptr) return NODE_PTR_IS_NULL;
+       
+    if (flag == nullptr)                      return FLAG_IS_NULL;
+
+    Node_t *node = *node_;
+
+    if (node->value == nullptr)               return NODE_VALUE_IS_NULL;
+
+    int status = FUNC_IS_OK;
+
+    RT *arg = node->value;
+
+    if (node->TYPE == OPER_TYPE)
+    {
+        switch (OP)
+        {
+            case MUL:   
+                if (LEFT->TYPE  == NUM_TYPE && IsZeroNum(LEFT->NUM) ||
+                    RIGHT->TYPE == NUM_TYPE && IsZeroNum(RIGHT->NUM))
+                {
+                    ASSIGN_VALUE(0);
+
+                    return status;
+                }
+                if (LEFT->TYPE  == NUM_TYPE && IsEqualNum(LEFT->NUM, 1))
+                {
+                    RECONNECT(RIGHT, LEFT);
+
+                    return status;
+                }
+                if (RIGHT->TYPE  == NUM_TYPE && IsEqualNum(RIGHT->NUM, 1))
+                {
+                    RECONNECT(LEFT, RIGHT);
+
+                    return status;
+                }
+                break;
+
+            case ADD:
+                if (LEFT->TYPE   == NUM_TYPE && IsZeroNum(LEFT->NUM))
+                {
+                    RECONNECT(RIGHT, LEFT);
+
+                    return status;
+                }
+                if (RIGHT->TYPE  == NUM_TYPE && IsZeroNum(RIGHT->NUM))
+                {
+                    RECONNECT(LEFT, RIGHT);
+
+                    return status;
+                }
+                break;
+
+            case SUB:
+                if (LEFT->TYPE   == NUM_TYPE && RIGHT->TYPE == NUM_TYPE &&
+                    IsEqualNum(LEFT->NUM, RIGHT->NUM))
+                {
+                    ASSIGN_VALUE(0);
+
+                    return status;
+                }
+                if (RIGHT->TYPE  == NUM_TYPE && IsZeroNum(RIGHT->NUM))
+                {
+                    RECONNECT(LEFT, RIGHT);
+
+                    return status;
+                }
+                break;
+
+            case LN:
+            case LG:
+                if (LEFT->TYPE == NUM_TYPE && IsEqualNum(LEFT->NUM, 1))
+                {
+                    ASSIGN_VALUE(0);
+                
+                    return status;
+                }
+                break;
+
+            case DIV:
+                if (LEFT->TYPE == NUM_TYPE && IsZeroNum(LEFT->NUM))
+                {
+                    ASSIGN_VALUE(0);
+                
+                    return status;
+                }
+                break;
+
+            case POW:
+                if (RIGHT->TYPE == NUM_TYPE && IsZeroNum(RIGHT->NUM) ||
+                    LEFT->TYPE  == NUM_TYPE && IsEqualNum(LEFT->NUM, 1))
+                {
+                    ASSIGN_VALUE(1);
+                
+                    return status;
+                }
+                if (RIGHT->TYPE == NUM_TYPE && IsEqualNum(RIGHT->NUM, 1))
+                {
+                    RECONNECT(LEFT, RIGHT);
+
+                    return status;
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    if (LEFT)  status |= SimplifyNodesUniq(&LEFT,  flag, def);
+    if (RIGHT) status |= SimplifyNodesUniq(&RIGHT, flag, def);
+
+    return status;
+}
+
+int SimplifyNodes(Node_t **node, int *flag, MemoryDefender *def)
+{
+    if (node == nullptr || *node == nullptr) return NODE_PTR_IS_NULL;
+       
+    if (flag == nullptr)                     return FLAG_IS_NULL;
+
+    if ((*node)->value == nullptr)           return NODE_VALUE_IS_NULL;
+ 
+    int status = FUNC_IS_OK;
+
+    status |= SimplifyNodesNum (*node, flag);
+    if (status) return status;
+
+    status |= SimplifyNodesUniq(node, flag, def);
+    if (status) return status;
+
+    return status;
+}
+
+int Simplify(Tree_t *tree, MemoryDefender *def)
+{
+    if (tree == nullptr)  return TREE_IS_NULL;
+
+    if (TreeVerify(tree)) return TreeDump(tree);
+
+    int status = FUNC_IS_OK;
+    
+    int flag = NO_CHANGES;
+
+    do
+    {
+        flag = NO_CHANGES;
+        status |= SimplifyNodes(&tree->root, &flag, def);
+        if (status) return status;
+    }
+    while (flag != NO_CHANGES);
+
+    return status;
+}
+
 int main()
 {
     int status = 0;
@@ -831,15 +973,21 @@ int main()
     status |= TreeFill(&tree, stream, &buffer, &def);
     if (status) PRINT_D(status);
 
-    status |= TreeDump(&tree);
-    if (status) PRINT_D(status);
+    // status |= TreeDump(&tree);
+    // if (status) PRINT_D(status);
 
     Tree_t *differentiated_tree = nullptr;
 
     status |= Differentiate(&tree, &differentiated_tree, 'x', &def);
     if (status) PRINT_D(status);
-    
+
     // i haven't got any idea about diff_tree->size ))))))
+
+    status |= TreeDump(differentiated_tree);
+    if (status) PRINT_D(status);
+
+    status |= Simplify(differentiated_tree, &def);
+    if (status) PRINT_D(status);
 
     status |= TreeDump(differentiated_tree);
     if (status) PRINT_D(status);
