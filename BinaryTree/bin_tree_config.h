@@ -16,7 +16,7 @@ enum ValueType
 
 struct RT
 {
-    int type;
+    int    type;
 
     char   oper;
     double num;

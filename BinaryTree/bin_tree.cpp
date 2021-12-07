@@ -54,7 +54,7 @@ TreeStatus NodesDtor     (Node_t *node)
     node->right = DEAD_PTR;
     
     node->value = DEAD_VAL;
-    // CHANGE      ^     SOMEDAY
+    // CHANGE     ^     SOMEDAY
     // ON SOMETHING BETTER
 
     free(node);
@@ -313,8 +313,6 @@ static void PrintNode     (const Node_t *node, const size_t *number_of_node, FIL
     fprintf(dump_file, "    node%lu [shape = %s, fillcolor=\"%s\", ", *number_of_node, shapes[num], colors[num]);
 
     fprintf(dump_file, "    label=\"");
-
-    // fprintf(dump_file, "%p", node->parent);
 
     if (node->value == nullptr)
     {

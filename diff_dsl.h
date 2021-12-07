@@ -4,6 +4,10 @@
 
 #define OP arg->oper
 
+#define TYPE value->type
+
+#define NUM value->num
+
 #define OPER_INIT(ARG, OPER)                    \
 do                                               \
 {                                                 \
@@ -26,12 +30,12 @@ while (0)
 #define ARG_ASSIGN(NODE, ARG)                                      \
     NODE->value = ARG;
 
-#define NUM__INIT(ARG, NUM)  \
+#define NUM__INIT(ARG, NUM_)  \
 do                            \
 {                              \
     assert(ARG->type == 0 && ARG->oper == 0 && ARG->num == 0 && ARG->var == 0); \
     ARG->type = NUM_TYPE;        \
-    ARG->num  = NUM;              \
+    ARG->num  = NUM_;              \
 }                                  \
 while (0)
 
@@ -48,10 +52,10 @@ while (0)
     ARG_ASSIGN(new_ ## AP, arg_ ## AP);        \
     (new_ ## PAR)->SIDE  = (new_ ## AP);          
 
-#define NUM_NODE_INIT(NUM, AP, PAR, SIDE)         \
+#define NUM_NODE_INIT(NUM_, AP, PAR, SIDE)         \
     NODE_INIT(new_ ## AP, new_ ## PAR);            \
     ARG__INIT(arg_ ## AP);                          \
-    NUM__INIT(arg_ ## AP, NUM);                      \
+    NUM__INIT(arg_ ## AP, NUM_);                      \
     ARG_ASSIGN(new_ ## AP, arg_ ## AP);               \
     (new_ ## PAR)->SIDE  = (new_ ## AP);
 
@@ -61,4 +65,39 @@ while (0)
 #define COPY(FROM, DEST, SIDE)                              \
     status |= CopyNodes(FROM, &(new_ ## DEST)->SIDE, new_ ## DEST, def);
 
+#define RECONNECT(SAVE, KILL)    \
+do                                \
+{                                  \
+    SAVE->parent = node->parent;    \
+    if (node->parent)                \
+    {                                 \
+        if (node->parent->left  == node) node->parent->left  = SAVE; \
+        if (node->parent->right == node) node->parent->right = SAVE;  \
+    }                                    \
+    DefenderPush(def, (char *)node);      \
+                                           \
+    NodesDtor(KILL);                        \
+                                             \
+    *flag  = YE_CHANGES;                      \
+    *node_ = SAVE;                             \
+}                                               \
+while (0)
+
+#define ASSIGN_VALUE(NUMBER)                       \
+do                                                  \
+{                                                    \
+    arg->type = NUM_TYPE;                             \
+    arg->num  = NUMBER;                                \
+                                                        \
+    NodesDtor(LEFT);                                     \
+    NodesDtor(RIGHT);                                     \
+                                                           \
+    LEFT  = nullptr;                                        \
+    RIGHT = nullptr;                                         \
+                                                              \
+    *flag = YE_CHANGES;                                        \
+}                                                               \
+while (0)
+
 #endif // DIFF_DSL_H
+
