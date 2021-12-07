@@ -24,4 +24,4 @@
 
 #define PRINT_SM(s, n) do{ fprintf(__OUT, "[%d] = %.*s\n", __LINE__, n s);                                          }while(0);
 
-#endif
+#endif // DEBUG_LIB_H

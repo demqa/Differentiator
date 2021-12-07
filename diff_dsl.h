@@ -6,7 +6,38 @@
 
 #define TYPE value->type
 
-#define NUM value->num
+#define NUM  value->num
+
+#define VAR  value->var
+
+#define NEW_NODE(NAME)                                   \
+    Node_t *NAME = (Node_t *) calloc(1, sizeof(Node_t));  \
+    if (NAME == nullptr) return nullptr;
+
+#define NEW_ARG(NODE, NAME)                                  \
+    RT *NAME = (RT *) calloc(1, sizeof(RT));                  \
+    if (NAME == nullptr) return nullptr;                       \
+    DefenderPush(def, (char *)NAME);                            \
+    NODE->value = NAME;
+    
+
+#define OPER_ARG(ARG, OPER)   \
+    ARG->type = OPER_TYPE;     \
+    ARG->oper = OPER;
+
+#define NUM_ARG(ARG, NUM_)        \
+    ARG->type = NUM_TYPE;          \
+    ARG->num  = NUM_;
+
+#define VAR_ARG(ARG, VAR)             \
+    ARG->type = VAR_TYPE;              \
+    ARG->var  = VAR;
+
+#define CONNECT(PAR, CHI, SIDE)           \
+    PAR->SIDE   = CHI;                     \
+    CHI->parent = PAR;
+
+
 
 #define OPER_INIT(ARG, OPER)                    \
 do                                               \
@@ -30,12 +61,12 @@ while (0)
 #define ARG_ASSIGN(NODE, ARG)                                      \
     NODE->value = ARG;
 
-#define NUM__INIT(ARG, NUM_)  \
+#define NUM__INIT(ARG, NUM_) \
 do                            \
 {                              \
     assert(ARG->type == 0 && ARG->oper == 0 && ARG->num == 0 && ARG->var == 0); \
     ARG->type = NUM_TYPE;        \
-    ARG->num  = NUM_;              \
+    ARG->num  = NUM_;             \
 }                                  \
 while (0)
 
@@ -52,10 +83,10 @@ while (0)
     ARG_ASSIGN(new_ ## AP, arg_ ## AP);        \
     (new_ ## PAR)->SIDE  = (new_ ## AP);          
 
-#define NUM_NODE_INIT(NUM_, AP, PAR, SIDE)         \
+#define NUM_NODE_INIT(NUM_, AP, PAR, SIDE)        \
     NODE_INIT(new_ ## AP, new_ ## PAR);            \
     ARG__INIT(arg_ ## AP);                          \
-    NUM__INIT(arg_ ## AP, NUM_);                      \
+    NUM__INIT(arg_ ## AP, NUM_);                     \
     ARG_ASSIGN(new_ ## AP, arg_ ## AP);               \
     (new_ ## PAR)->SIDE  = (new_ ## AP);
 
@@ -100,4 +131,3 @@ do                                                  \
 while (0)
 
 #endif // DIFF_DSL_H
-

@@ -6,4 +6,4 @@ const size_t MAX_ALLOCS = 1488;
 
 #include "../debug_lib.h"
 
-#endif
+#endif // MEMORY_DEFENDER_CONFIG_H

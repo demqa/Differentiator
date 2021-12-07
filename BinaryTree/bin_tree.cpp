@@ -277,16 +277,6 @@ TreeStatus TreeVerify    (Tree_t *tree)
     return tree->status;
 }
 
-#define PRINT_ERROR(error_code)                  \
-do{                                               \
-    if (status & error_code)                       \
-    {                                               \
-        fprintf(TREE_LOG_FILE_DEFAULT, #error_code); \
-        fprintf(TREE_LOG_FILE_DEFAULT, "\n");         \
-    }                                                  \
-}                                                       \
-while(0)
-
 FILE *TREE_LOG_FILE_DEFAULT = stderr;
 
 #define CASE(OP)                                             \
@@ -376,6 +366,8 @@ static void PrintNode     (const Node_t *node, const size_t *number_of_node, FIL
     return;
 }
 
+#undef CASE
+
 static void PrintEdge     (const size_t from, const size_t to, const char color[COLOR_MAX_LEN], FILE *dump_file)
 {
     if (color == nullptr || dump_file == nullptr)
@@ -416,6 +408,16 @@ static TreeStatus NodeDump(const Node_t *node, size_t *number_of_node, FILE *dum
 
     return (TreeStatus) status;
 }
+
+#define PRINT_ERROR(error_code)                  \
+do{                                               \
+    if (status & error_code)                       \
+    {                                               \
+        fprintf(TREE_LOG_FILE_DEFAULT, #error_code); \
+        fprintf(TREE_LOG_FILE_DEFAULT, "\n");         \
+    }                                                  \
+}                                                       \
+while(0)
 
 TreeStatus TreeDump(Tree_t *tree)
 {
@@ -469,6 +471,8 @@ TreeStatus TreeDump(Tree_t *tree)
 
     return (TreeStatus) status;
 }
+
+#undef PRINT_ERROR
 
 #undef CATCH_NODE_ERRORS
 #undef CATCH_TREE_ERRORS

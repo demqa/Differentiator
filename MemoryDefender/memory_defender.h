@@ -19,4 +19,4 @@ int DefenderIsFull(MemoryDefender *defender);
 int DefenderClear (MemoryDefender *defender);
 int DefenderDtor  (MemoryDefender *defender);
 
-#endif
+#endif // MEMORY_DEFENDER_H

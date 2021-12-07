@@ -1,6 +1,5 @@
 #include "differentiator.h"
 #include "debug_lib.h"
-#include "diff_dsl.h"
 
 int Filesize  (FILE *stream, size_t *filesize)
 {
@@ -91,189 +90,266 @@ int IsCharOper(const char c)
     return 0;
 }
 
-int GetArg    (char *string, RT *arg)
+#define SyntaxError() { assert(false); }
+
+Node_t  *GetE(char **, MemoryDefender *);
+Node_t  *GetN(char **, MemoryDefender *);
+Node_t  *GetW(char **, MemoryDefender *);
+Node_t  *GetT(char **, MemoryDefender *);
+Node_t  *GetP(char **, MemoryDefender *);
+Node_t  *GetF(char **, MemoryDefender *);
+Node_t  *GetG(char  *, MemoryDefender *);
+
+#define Require(c) if (*((*ptr)++) != c) SyntaxError();
+
+int StrEqual(char *str, const char *f)
 {
-    if (string == nullptr || arg == nullptr) return PTR_IS_NULL;
+    for (int i = 0; str[i] != '\0' && f[i] != '\0'; i++)
+        if (str[i] != f[i]) return 0;
 
-    size_t number = 0;
+    return 1;
+}
 
-    size_t length = strlen(string);
+int ReadFunc(char **ptr, int *n)
+{
+    if (n == nullptr) return 0;
+    
+    int check = 0;
 
-    if (length == 0) return INVALID_STRING;
+    char *str = *ptr;
+
+    if (StrEqual(str, "sin"))
+    {
+        (*ptr) += 3;
+        *n    = SIN;
+    }
+    else
+    if (StrEqual(str, "cos"))
+    {
+        (*ptr) += 3;
+        *n    = COS;
+    }
+    else
+    if (StrEqual(str, "ln"))
+    {
+        (*ptr) += 2;
+        *n     = LN;
+    }
+    else
+    if (StrEqual(str, "lg"))
+    {
+        (*ptr) += 2;
+        *n     = LG;
+    }
+    else
+    if (StrEqual(str, "sh"))
+    {
+        (*ptr) += 2;
+        *n     = SH;
+    }
+    else
+    if (StrEqual(str, "ch"))
+    {
+        (*ptr) += 2;
+        *n     = CH;
+    }
+    else
+    {
+        *n = 0;
+    }
+
+    return 0;
+}
+
+int ReadVar(char **ptr, char *c)
+{
+    if (c == nullptr) return 0;
+
+    if ('a' <= **ptr && **ptr <= 'z')
+    {
+        *c = **ptr;
+        (*ptr)++;
+    }
+
+    return 0;
+}
+
+Node_t *GetG(char **ptr, MemoryDefender *def)
+{
+    Node_t *val = GetE(ptr, def);
+
+    Require('$');
+
+    return val;
+}
+
+Node_t *GetW(char **ptr, MemoryDefender *def)
+{
+    Node_t *val = GetP(ptr, def);
+    if (**ptr == '^')
+    {
+        (*ptr)++;
+        Node_t *val2 = GetW(ptr, def);
+
+        NEW_NODE(node);
+        NEW_ARG (node, arg);
+        OPER_ARG(arg,  POW);
+
+        CONNECT(node, val,  left);
+        CONNECT(node, val2, right);
+
+        val = node;
+    }
+    return val;
+}
+
+Node_t *GetT(char **ptr, MemoryDefender *def)
+{
+    Node_t *val = GetW(ptr, def);
+    while (**ptr == '*' || **ptr == '/')
+    {
+        int op = **ptr;
+        (*ptr)++;
+
+        Node_t *val2 = GetW(ptr, def);
+
+        NEW_NODE(node);
+        NEW_ARG (node, arg);
+        OPER_ARG (arg,  op);
+
+        CONNECT(node, val,  left);
+        CONNECT(node, val2, right);
+        
+        val = node;
+    }
+    return val;
+}
+
+Node_t *GetE(char **ptr, MemoryDefender *def)
+{
+    Node_t *val = GetT(ptr, def);
+    while (**ptr == '+' || **ptr == '-')
+    {
+        char op = **ptr;
+        (*ptr)++;
+
+        Node_t *val2 = GetT(ptr, def);
+
+        NEW_NODE(node);
+        NEW_ARG (node, arg);
+        OPER_ARG(arg,   op);
+
+        CONNECT(node, val,  left);
+        CONNECT(node, val2, right);
+        
+        val = node;
+    }
+    return val;
+}
+
+Node_t *GetN(char **ptr, MemoryDefender *def)
+{
+    size_t check = 0;
 
     double num = NAN;
+    sscanf(*ptr, "%lf%n", &num, &check);
 
-    if (sscanf(string, "%lf", &num) == 1)
-    {           
-        arg->type = NUM_TYPE;
-        arg->num  = num;
-        // arg->subtree_status = CONST;
-    }
-    else
-    if (length == 1)
-    {
-        if (IsCharOper(string[0]))
-        {
-            arg->type = OPER_TYPE;
-            arg->oper = string[0];
-            // arg->subtree_status = NOT_CALCULATED;
-        }
-        else
-        if ('a' < string[0] && string[0] < 'z')
-        {
-            arg->type = VAR_TYPE;
-            arg->var  = string[0];
-            // arg->subtree_status = NOT_CALCULATED;
-            // we cant know which parameter is const for now
-        }
-        else
-        {
-            fprintf(stderr, "UNKNOWN EXPRESSION %s\n", string);
-            return UNKNOWN_EXPRESSION;
-        }
-    }
-    else
-    if (length == 2)
-    {
-        arg->type = OPER_TYPE;
-        if(strcmp(string, "ln") == 0)
-            arg->oper = LN;
-        else
-        if (strcmp(string, "lg") == 0)
-            arg->oper = LG;
-        else
-        if (strcmp(string, "sh") == 0)
-            arg->oper = SH;
-        else
-        if (strcmp(string, "ch") == 0)
-            arg->oper = CH;
-        else
-        {
-            fprintf(stderr, "UNKNOWN EXPRESSION %s\n", string);
-            return UNKNOWN_EXPRESSION;
-        }
-    }
-    else
-    if (length == 3)
-    {   
-        arg->type = OPER_TYPE;
-        if (strcmp(string, "sin") == 0)
-            arg->oper = SIN;
-        else
-        if (strcmp(string, "cos") == 0)
-            arg->oper = COS;
-        else
-        {
-            fprintf(stderr, "UNKNOWN EXPRESSION %s\n", string);
-            return UNKNOWN_EXPRESSION;
-        }
+    (*ptr) += check;
 
+    if (check == 0)
+        SyntaxError();
+    
+    NEW_NODE(val);
+    NEW_ARG (val, arg);
+    NUM_ARG (arg, num);
+
+    return val;
+}
+
+Node_t *GetP(char **ptr, MemoryDefender *def)
+{
+    int multiplier = 1;
+
+    while (**ptr == '+' || **ptr == '-')
+        if (*((*ptr)++) == '-')
+            multiplier *= -1;
+    
+    if (multiplier == -1)
+    {
+        NEW_NODE(node);
+        NEW_ARG (node, arg);
+        OPER_ARG(arg,  SUB);
+
+        NEW_NODE(L);
+        NEW_ARG (L, AL);
+        NUM_ARG (AL, 0);
+        CONNECT(node, L, left);
+
+        Node_t *R = GetP(ptr, def);
+        CONNECT(node, R, right);
+
+        return node;
+    }
+
+    if (**ptr == '(')
+    {
+        (*ptr)++;
+
+        Node_t *val = GetE(ptr, def);
+
+        Require(')');
+
+        return val;
     }
     else
+        return GetF(ptr, def);
+}
+
+Node_t *GetV(char **ptr, MemoryDefender *def)
+{
+    char var = 0;
+
+    ReadVar(ptr, &var);
+
+    if (var != 0)
     {
-        fprintf(stderr, "UNKNOWN EXPRESSION %s\n", string);
-        return UNKNOWN_EXPRESSION;
+        NEW_NODE(val);
+        NEW_ARG (val, arg);
+        VAR_ARG (arg, var);
+
+        return val;
     }
+    else
+        return GetN(ptr, def);
+}
+
+Node_t *GetF(char **ptr, MemoryDefender *def)
+{
+    int oper = 0;
+
+    ReadFunc(ptr, &oper);
+
+    if (oper != 0)
+    {
+        Node_t *val = GetP(ptr, def);
+        
+        NEW_NODE(node);
+        NEW_ARG (node, arg);
+        OPER_ARG(arg, oper);
+
+        CONNECT(node, val, left);
+        
+        return node;
+    }
+    else
+        return GetV(ptr, def);
+}
+
+int TreeReadProcessing(Tree_t *tree, Node_t *node, char **ptr, char *end_ptr,     MemoryDefender *def)
+{
+    tree->root = GetG(ptr, def);
 
     return FUNC_IS_OK;
-}
-
-int ProceedNodeValue  (char **ptr,   Node_t *node,                                MemoryDefender *def)
-{
-    int status = FUNC_IS_OK;
-
-    char *string = (char *) calloc(MAX_EXPR_ELEM_LEN + 1, sizeof(char));
-    if (string == nullptr) status |= BAD_ALLOC;
-
-    status |= GetString(ptr, string);
-    if (status) return status;
-
-    RT *arg = (RT *) calloc(1, sizeof(RT));
-    if (arg == nullptr)    status |= BAD_ALLOC;
-
-    DefenderPush(def, (char *)arg);
-
-    status |= GetArg(string, arg);
-    if (status) return status;
-
-    free(string);
-
-    if (status) return status;
-
-    node->value = arg;
-    
-    return status;
-}
-
-int TreeReadProcessing(Tree_t *tree, Node_t *node,     char **ptr, char *end_ptr, MemoryDefender *def)
-{
-    if (tree == nullptr)   return TREE_IS_NULL;
-    
-    if (ptr  == nullptr || *ptr == nullptr || end_ptr == nullptr) return PTR_IS_NULL;
-
-    if (*ptr > end_ptr)    return PTR_BIGGER_BUFF_END;
-
-    int status = FUNC_IS_OK;
-
-    while (*ptr <= end_ptr)
-    {
-        if (**ptr == '(')
-        {
-            (*ptr)++;
-
-            if (node == nullptr)
-            {
-                NodeInsert(tree, node, L_CHILD, nullptr);
-                node = tree->root;
-            }
-            else
-            if (node->left == nullptr)
-            {
-                NodeInsert(tree, node, L_CHILD, nullptr);
-                node = node->left;
-            }
-            else
-            {
-                NodeInsert(tree, node, R_CHILD, nullptr);
-                node = node->right;
-            }
-
-            if (**ptr == '(')
-                continue;
-
-            assert(**ptr != ')' && "You've posted cringe!");
-            
-            // number or variable
-            status |= ProceedNodeValue(ptr, node, def);
-            if (status) return status;
-
-            (*ptr)++;
-        }
-        else
-        if (**ptr == ')')
-        {
-            if (node == nullptr) return FUCK_MY_LIFE;
-
-            if (node == tree->root)
-                break;
-
-            (*ptr)++;
-
-            node = node->parent;
-        }
-        else
-        {
-            if (node == nullptr) return FUCK_MY_LIFE;
-
-            // operator
-            status |= ProceedNodeValue(ptr, node, def);
-            if (status) return status;
-
-            (*ptr)++;
-        }
-    }
-    
-    return status;
 }
 
 int TreeRead          (Tree_t *tree, char *buffer, size_t buff_size,              MemoryDefender *def)
@@ -312,7 +388,7 @@ int TreeRead          (Tree_t *tree, char *buffer, size_t buff_size,            
     return FUNC_IS_OK;
 }
 
-int TreeFill          (Tree_t *tree, FILE *stream,     char **buff,               MemoryDefender *def)
+int TreeFill          (Tree_t *tree, FILE *stream, char **buff,                   MemoryDefender *def)
 {
     if (tree == nullptr)   return TREE_IS_NULL;
 
@@ -339,7 +415,8 @@ int TreeFill          (Tree_t *tree, FILE *stream,     char **buff,             
     return FUNC_IS_OK;
 }
 
-int IsConst(Node_t *node, const char variable) /*Is Subtree Const*/
+
+int IsConst    (Node_t *node, const char variable) /*Is Subtree Const*/
 {
     if (node == nullptr) return 0;
 
@@ -437,6 +514,7 @@ int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable, 
     ARG_ASSIGN(new_node, new_arg);
 
     *diff = new_node;
+    Tree_t tr = {};
 
     if (arg->type == OPER_TYPE)
     {
@@ -719,6 +797,7 @@ int Differentiate(Tree_t *tree, Tree_t **tree_res, const char variable, MemoryDe
     return status;
 }
 
+
 double Eval(const char SIGN, double x, double y)
 {
     switch (SIGN)
@@ -820,6 +899,13 @@ int SimplifyNodesUniq(Node_t **node_, int *flag, MemoryDefender *def)
                 break;
 
             case SUB:
+                if (LEFT->TYPE  == VAR_TYPE && RIGHT->TYPE == VAR_TYPE &&
+                    LEFT->VAR == RIGHT->VAR)
+                {
+                    ASSIGN_VALUE(0);
+
+                    return status;
+                }
                 if (LEFT->TYPE  == NUM_TYPE && RIGHT->TYPE == NUM_TYPE &&
                     IsEqualNum(LEFT->NUM, RIGHT->NUM))
                 {
@@ -921,6 +1007,7 @@ int Simplify(Tree_t *tree, MemoryDefender *def)
     return status;
 }
 
+
 int main()
 {
     int status = 0;
@@ -944,8 +1031,8 @@ int main()
     status |= TreeFill(&tree, stream, &buffer, &def);
     if (status) PRINT_D(status);
 
-    // status |= TreeDump(&tree);
-    // if (status) PRINT_D(status);
+    status |= TreeDump(&tree);
+    if (status) PRINT_D(status);
 
     Tree_t *differentiated_tree = nullptr;
 
@@ -973,4 +1060,3 @@ int main()
 
     return 0;
 }
-

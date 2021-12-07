@@ -57,4 +57,4 @@ const char shapes[][SHAPE_MAX_LEN] =
     "ellipse",
 };
 
-#endif
+#endif // BIN_TREE_CONFIG_H

@@ -2,11 +2,14 @@
 #define DIFFERENTIATOR_H
 
 #include <math.h>
+#include <ctype.h>
 
 #include "BinaryTree/bin_tree.h"
 #include "MemoryDefender/memory_defender.h"
 
 #include "differentiator_config.h"
+
+#include "diff_dsl.h"
 
 // enum ValueType
 // {

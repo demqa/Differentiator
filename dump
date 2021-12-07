@@ -1,14 +1,4 @@
 digraph structs {
     node [color=black, shape=box, style="filled"];
-    node0 [shape = ellipse, fillcolor="#ff8b1f",     label="*"];
-    edge [color="#7100c7"]; node0 -> node1;
-    node1 [shape = ellipse, fillcolor="#ff8b1f",     label="^"];
-    edge [color="#7100c7"]; node1 -> node2;
-    node2 [shape = invtriangle, fillcolor="#14d4ff",     label="3"];
-    edge [color="#7100c7"]; node1 -> node3;
-    node3 [shape = hexagon, fillcolor="#f6fa00",     label="x"];
-    edge [color="#7100c7"]; node0 -> node4;
-    node4 [shape = parallelogram, fillcolor="#00ed14",     label="LN"];
-    edge [color="#7100c7"]; node4 -> node5;
-    node5 [shape = invtriangle, fillcolor="#14d4ff",     label="3"];
+    node0 [shape = invtriangle, fillcolor="#14d4ff",     label="0"];
 }
