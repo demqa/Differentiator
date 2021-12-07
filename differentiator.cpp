@@ -48,48 +48,6 @@ int ReadBuffer(char **buffer, FILE *stream)
     return 0;
 }
 
-int GetString (char **ptr, char *string)
-{
-    if (ptr == nullptr || *ptr == nullptr || string == nullptr) return PTR_IS_NULL;
-
-    if (**ptr == ')')
-    {
-        string[0] = '\0';
-        return FUNC_IS_OK;
-    }
-
-    assert(**ptr != '(');
-
-    string[0] = **ptr;
-
-    size_t num = 1;
-
-    while (*(*ptr + 1) != ')' && *(*ptr + 1) != '(')
-    {
-        if (*(*ptr + 1) == '\0')          return TILT;
-
-        if (num + 1 >= MAX_EXPR_ELEM_LEN) return MAX_EXPR_ELEM_LEN_REACHED;
-
-        (*ptr)++;
-
-        string[num++] = **ptr;
-    }
-
-    assert(num < MAX_EXPR_ELEM_LEN);
-
-    string[num] = '\0';
-
-    return DEAD_INSIDE;
-}
-
-int IsCharOper(const char c)
-{
-    if (c == SUB || c == ADD || c == MUL || c == DIV || c == POW)
-        return 1;
-
-    return 0;
-}
-
 #define SyntaxError() { assert(false); }
 
 Node_t  *GetE(char **, MemoryDefender *);
