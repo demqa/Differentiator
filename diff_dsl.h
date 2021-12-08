@@ -10,6 +10,8 @@
 
 #define VAR  value->var
 
+#define OPER value->oper
+
 #define NEW_NODE(NAME)                                   \
     Node_t *NAME = (Node_t *) calloc(1, sizeof(Node_t));  \
     if (NAME == nullptr) return nullptr;
@@ -21,9 +23,9 @@
     NODE->value = NAME;
     
 
-#define OPER_ARG(ARG, OPER)   \
+#define OPER_ARG(ARG, OPER_)   \
     ARG->type = OPER_TYPE;     \
-    ARG->oper = OPER;
+    ARG->oper = OPER_;
 
 #define NUM_ARG(ARG, NUM_)        \
     ARG->type = NUM_TYPE;          \
@@ -39,12 +41,12 @@
 
 
 
-#define OPER_INIT(ARG, OPER)                    \
+#define OPER_INIT(ARG, OPER_)                    \
 do                                               \
 {                                                 \
     assert(ARG->type == 0 && ARG->oper == 0 && ARG->num == 0 && ARG->var == 0); \
     ARG->type = OPER_TYPE;                          \
-    ARG->oper = OPER;                                \
+    ARG->oper = OPER_;                                \
 }                                                     \
 while (0)
 

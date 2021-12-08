@@ -32,18 +32,18 @@ enum Changes
     YE_CHANGES = 1,
 };
 
-const char ADD = '+';
-const char SUB = '-';
-const char MUL = '*';
-const char DIV = '/';
-const char POW = '^';
+// const char ADD = '+';
+// const char SUB = '-';
+// const char MUL = '*';
+// const char DIV = '/';
+// const char POW = '^';
 
-const char SIN = 's';
-const char COS = 'c';
-const char LN  = 'l';
-const char LG  = 'g';
-const char SH  = 'w';
-const char CH  = 'h';
+// const char SIN = 's';
+// const char COS = 'c';
+// const char LN  = 'l';
+// const char LG  = 'g';
+// const char SH  = 'w';
+// const char CH  = 'h';
 
 enum DifferentiatorStatus
 {
@@ -73,7 +73,20 @@ enum DifferentiatorStatus
     INVALID_OPERATOR                                 = 1 << 19,
     NODE_VALUE_IS_NULL                               = 1 << 20,
     FLAG_IS_NULL                                     = 1 << 21,
-
+    DEF_IS_NULL                                      = 1 << 22,
+    
 };
+
+int CopyNodes(Node_t *node, Node_t **copy, Node_t *parent,                      MemoryDefender *def);
+int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable, MemoryDefender *def);
+int Simplify(Tree_t *tree, MemoryDefender *def);
+
+Node_t  *GetE(char **, MemoryDefender *);
+Node_t  *GetN(char **, MemoryDefender *);
+Node_t  *GetW(char **, MemoryDefender *);
+Node_t  *GetT(char **, MemoryDefender *);
+Node_t  *GetP(char **, MemoryDefender *);
+Node_t  *GetF(char **, MemoryDefender *);
+Node_t  *GetG(char **, MemoryDefender *);
 
 #endif // DIFFERENTIATOR_H

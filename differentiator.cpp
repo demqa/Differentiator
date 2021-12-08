@@ -48,34 +48,69 @@ int ReadBuffer(char **buffer, FILE *stream)
     return 0;
 }
 
-#define SyntaxError() { assert(false); }
+#define SyntaxError()                                    \
+do                                                        \
+{                                                          \
+    fprintf(stderr, "INVALID_INPUT_FORMAT\n");              \
+    fprintf(stderr, "EXPECTED NUMBER, INPUT: %c\n", **ptr);  \
+    return nullptr;                                           \
+}                                                              \
+while (0)
 
-Node_t  *GetE(char **, MemoryDefender *);
-Node_t  *GetN(char **, MemoryDefender *);
-Node_t  *GetW(char **, MemoryDefender *);
-Node_t  *GetT(char **, MemoryDefender *);
-Node_t  *GetP(char **, MemoryDefender *);
-Node_t  *GetF(char **, MemoryDefender *);
-Node_t  *GetG(char  *, MemoryDefender *);
+#define Require(c)                                                \
+do                                                                 \
+{                                                                   \
+    if (**ptr != c)                                                  \
+    {                                                                 \
+        fprintf(stderr, "INVALID_INPUT_FORMAT\n");                     \
+        fprintf(stderr, "EXPECTED: %c\n INPUT:    %c\n", c, **ptr);     \
+        return nullptr;                                                  \
+    }                                                                     \
+    else                                                                   \
+        (*ptr)++;                                                           \
+}                                                                            \
+while (0)
 
-#define Require(c) if (*((*ptr)++) != c) SyntaxError();
-
-int StrEqual(char *str, const char *f)
+int StrEqual(const char *l, const char *r)
 {
-    for (int i = 0; str[i] != '\0' && f[i] != '\0'; i++)
-        if (str[i] != f[i]) return 0;
+    if (l == nullptr || r == nullptr) return 0;
+
+    for (int i = 0; l[i] != '\0' && r[i] != '\0'; i++)
+        if (l[i] != r[i]) return 0;
 
     return 1;
 }
 
+int IsConstant(char op)
+{
+    if (op == EXP || op == PI)
+        return op;
+
+    return 0;
+}
+
 int ReadFunc(char **ptr, int *n)
 {
-    if (n == nullptr) return 0;
+    if (ptr == nullptr || *ptr == nullptr) return 0;
+
+    if (n == nullptr)                      return 0;
     
     int check = 0;
 
     char *str = *ptr;
 
+    if (StrEqual(*ptr, "pi"))
+    {
+        (*ptr) += 2;
+        *n     = PI;
+    }
+    else
+    if (StrEqual(*ptr, "e"))
+    {
+        (*ptr) += 1;
+        *n    = EXP;
+    }
+    else
     if (StrEqual(str, "sin"))
     {
         (*ptr) += 3;
@@ -119,9 +154,11 @@ int ReadFunc(char **ptr, int *n)
     return 0;
 }
 
-int ReadVar(char **ptr, char *c)
+int ReadVar (char **ptr, char *c)
 {
-    if (c == nullptr) return 0;
+    if (ptr == nullptr || *ptr == nullptr) return 0;
+
+    if (c == nullptr)                      return 0;
 
     if ('a' <= **ptr && **ptr <= 'z')
     {
@@ -132,9 +169,39 @@ int ReadVar(char **ptr, char *c)
     return 0;
 }
 
+int ReadNum (char **ptr, double *num)
+{
+    if (ptr == nullptr || *ptr == nullptr) return 0;
+
+    if (num == nullptr)                    return 0;
+
+    size_t check = 0;
+    sscanf(*ptr, "%lf%n", num, &check);
+
+    (*ptr) += check;
+
+    if (check == 0)
+        return 0;
+
+    return 1;
+}
+
+Node_t  *GetE(char **, MemoryDefender *);
+Node_t  *GetN(char **, MemoryDefender *);
+Node_t  *GetW(char **, MemoryDefender *);
+Node_t  *GetT(char **, MemoryDefender *);
+Node_t  *GetP(char **, MemoryDefender *);
+Node_t  *GetF(char **, MemoryDefender *);
+Node_t  *GetG(char **, MemoryDefender *);
+
 Node_t *GetG(char **ptr, MemoryDefender *def)
 {
+    if (ptr == nullptr || *ptr == nullptr) return nullptr;
+
+    if (def == nullptr)                    return nullptr;
+
     Node_t *val = GetE(ptr, def);
+    assert(val != nullptr);
 
     Require('$');
 
@@ -143,11 +210,18 @@ Node_t *GetG(char **ptr, MemoryDefender *def)
 
 Node_t *GetW(char **ptr, MemoryDefender *def)
 {
+    if (ptr == nullptr || *ptr == nullptr) return nullptr;
+
+    if (def == nullptr)                    return nullptr;
+
     Node_t *val = GetP(ptr, def);
+    assert(val != nullptr);
+
     if (**ptr == '^')
     {
         (*ptr)++;
         Node_t *val2 = GetW(ptr, def);
+        assert(val2 != nullptr);
 
         NEW_NODE(node);
         NEW_ARG (node, arg);
@@ -163,13 +237,20 @@ Node_t *GetW(char **ptr, MemoryDefender *def)
 
 Node_t *GetT(char **ptr, MemoryDefender *def)
 {
+    if (ptr == nullptr || *ptr == nullptr) return nullptr;
+
+    if (def == nullptr)                    return nullptr;
+
     Node_t *val = GetW(ptr, def);
+    assert(val != nullptr);
+    
     while (**ptr == '*' || **ptr == '/')
     {
         int op = **ptr;
         (*ptr)++;
 
         Node_t *val2 = GetW(ptr, def);
+        assert(val2 != nullptr);
 
         NEW_NODE(node);
         NEW_ARG (node, arg);
@@ -185,13 +266,20 @@ Node_t *GetT(char **ptr, MemoryDefender *def)
 
 Node_t *GetE(char **ptr, MemoryDefender *def)
 {
+    if (ptr == nullptr || *ptr == nullptr) return nullptr;
+
+    if (def == nullptr)                    return nullptr;
+
     Node_t *val = GetT(ptr, def);
+    assert(val != nullptr);
+
     while (**ptr == '+' || **ptr == '-')
     {
         char op = **ptr;
         (*ptr)++;
 
         Node_t *val2 = GetT(ptr, def);
+        assert(val2 != nullptr);
 
         NEW_NODE(node);
         NEW_ARG (node, arg);
@@ -207,15 +295,17 @@ Node_t *GetE(char **ptr, MemoryDefender *def)
 
 Node_t *GetN(char **ptr, MemoryDefender *def)
 {
-    size_t check = 0;
+    if (ptr == nullptr || *ptr == nullptr) return nullptr;
+
+    if (def == nullptr)                    return nullptr;
+
 
     double num = NAN;
-    sscanf(*ptr, "%lf%n", &num, &check);
-
-    (*ptr) += check;
-
-    if (check == 0)
+    
+    if (ReadNum(ptr, &num) != 1)
+    {
         SyntaxError();
+    }
     
     NEW_NODE(val);
     NEW_ARG (val, arg);
@@ -226,6 +316,10 @@ Node_t *GetN(char **ptr, MemoryDefender *def)
 
 Node_t *GetP(char **ptr, MemoryDefender *def)
 {
+    if (ptr == nullptr || *ptr == nullptr) return nullptr;
+
+    if (def == nullptr)                    return nullptr;
+
     int multiplier = 1;
 
     while (**ptr == '+' || **ptr == '-')
@@ -244,6 +338,8 @@ Node_t *GetP(char **ptr, MemoryDefender *def)
         CONNECT(node, L, left);
 
         Node_t *R = GetP(ptr, def);
+        assert(R != nullptr);
+
         CONNECT(node, R, right);
 
         return node;
@@ -254,6 +350,7 @@ Node_t *GetP(char **ptr, MemoryDefender *def)
         (*ptr)++;
 
         Node_t *val = GetE(ptr, def);
+        assert(val != nullptr);
 
         Require(')');
 
@@ -265,6 +362,10 @@ Node_t *GetP(char **ptr, MemoryDefender *def)
 
 Node_t *GetV(char **ptr, MemoryDefender *def)
 {
+    if (ptr == nullptr || *ptr == nullptr) return nullptr;
+
+    if (def == nullptr)                    return nullptr;
+
     char var = 0;
 
     ReadVar(ptr, &var);
@@ -283,13 +384,27 @@ Node_t *GetV(char **ptr, MemoryDefender *def)
 
 Node_t *GetF(char **ptr, MemoryDefender *def)
 {
+    if (ptr == nullptr || *ptr == nullptr) return nullptr;
+
+    if (def == nullptr)                    return nullptr;
+
     int oper = 0;
 
     ReadFunc(ptr, &oper);
+    if (IsConstant(oper))
+    {
+        NEW_NODE(node);
+        NEW_ARG (node, arg);
+        OPER_ARG(arg, IsConstant(oper));
 
+        return node;
+    }
+    else
     if (oper != 0)
     {
         Node_t *val = GetP(ptr, def);
+        assert(val != nullptr);
+
         
         NEW_NODE(node);
         NEW_ARG (node, arg);
@@ -303,16 +418,29 @@ Node_t *GetF(char **ptr, MemoryDefender *def)
         return GetV(ptr, def);
 }
 
-int TreeReadProcessing(Tree_t *tree, Node_t *node, char **ptr, char *end_ptr,     MemoryDefender *def)
+int TreeReadProcessing(Tree_t *tree, char **ptr,                     MemoryDefender *def)
 {
+    if (tree == nullptr)                   return TREE_IS_NULL;
+
+    if (TreeVerify(tree))                  return TreeDump(tree);
+
+    if (ptr == nullptr || *ptr == nullptr) return PTR_IS_NULL;
+
+    if (def == nullptr)                    return DEF_IS_NULL;
+
     tree->root = GetG(ptr, def);
+
+    if (tree->root == nullptr)
+        return TREE_IS_EMPTY;
 
     return FUNC_IS_OK;
 }
 
-int TreeRead          (Tree_t *tree, char *buffer, size_t buff_size,              MemoryDefender *def)
+int TreeRead          (Tree_t *tree, char *buffer, size_t buff_size, MemoryDefender *def)
 {
     if (tree == nullptr)   return TREE_IS_NULL;
+
+    if (TreeVerify(tree))  return TreeDump(tree);
 
     if (buffer == nullptr) return BUFFER_IS_NULL;
 
@@ -339,14 +467,14 @@ int TreeRead          (Tree_t *tree, char *buffer, size_t buff_size,            
     }
 
     ptr = buffer;
-    int status = TreeReadProcessing(tree, tree->root, &ptr, end_ptr, def);
+    int status = TreeReadProcessing(tree, &ptr, def);
     if (status)
         return status;
     
     return FUNC_IS_OK;
 }
 
-int TreeFill          (Tree_t *tree, FILE *stream, char **buff,                   MemoryDefender *def)
+int TreeFill          (Tree_t *tree, FILE *stream, char **buff,      MemoryDefender *def)
 {
     if (tree == nullptr)   return TREE_IS_NULL;
 
@@ -451,8 +579,6 @@ int IsEqualNum(double x, double num)
     return IsZeroNum(x - num);
 }
 
-int CopyNodes(Node_t *node, Node_t **copy, Node_t *parent, MemoryDefender *def);
-
 int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable, MemoryDefender *def)
 {
     if (node == nullptr)                     return NODE_PTR_IS_NULL;
@@ -476,9 +602,14 @@ int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable, 
 
     if (arg->type == OPER_TYPE)
     {
-        assert(NodeIsTerminal(node) != NODE_IS_TERMINAL);
+        assert(NodeIsTerminal(node) != NODE_IS_TERMINAL || IsConstant(OP));
 
         assert(arg->num == 0 && arg->var == 0);
+
+        if (IsConstant(OP))
+        {
+            ZERO_INIT(new_arg);
+        }
 
         if (arg->oper == ADD || arg->oper == SUB)
         {
@@ -609,9 +740,9 @@ int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable, 
         {
             OPER_INIT(new_arg, MUL);
 
-            OP_NODE_INIT(MUL, L, node, left);
+            OP_NODE_INIT(SUB, L, node, left);
 
-            NUM_NODE_INIT(-1, LL, L, left);
+            NUM_NODE_INIT(0, LL, L, left);
 
             OP_NODE_INIT(SIN, LR, L, right);
             COPY(LEFT, LR, left);
@@ -749,6 +880,8 @@ int Differentiate(Tree_t *tree, Tree_t **tree_res, const char variable, MemoryDe
     status |= DiffNodes  (tree->root, &new_tree->root, nullptr, variable, def);
 
     status |= ClearStatus(tree->root);
+
+    status |= Simplify   (new_tree, def);
     
     *tree_res = new_tree;
 
@@ -896,6 +1029,13 @@ int SimplifyNodesUniq(Node_t **node_, int *flag, MemoryDefender *def)
                 
                     return status;
                 }
+                if (LEFT->TYPE  == VAR_TYPE && RIGHT->TYPE == VAR_TYPE && 
+                    LEFT->VAR == RIGHT->VAR)
+                {
+                    ASSIGN_VALUE(1);
+                
+                    return status;
+                }
                 break;
 
             case POW:
@@ -965,6 +1105,244 @@ int Simplify(Tree_t *tree, MemoryDefender *def)
     return status;
 }
 
+FILE *tex_out = nullptr;
+
+int TexVerify()
+{
+    if (tex_out == nullptr)
+        return 1;
+
+    return 0;
+}
+
+int TexInit()
+{
+    if (tex_out)
+    {
+        fprintf(stderr, "tex is already opened\n");
+        return 0;
+    }
+
+    tex_out = fopen("out.tex", "w");
+    if (tex_out == nullptr)
+    {
+        fprintf(stderr, "tex cringe\n");
+        return -1;
+    }
+
+    fputs("\\documentclass{article}\n", tex_out);
+    fputs("\\begin{document}       \n", tex_out);
+    fputs("\n",                         tex_out);
+
+}
+
+int TexDestroy()
+{
+    if (TexVerify())
+        return -1;
+
+    fputs("\n",              tex_out);
+    fputs("\n",              tex_out);
+    fputs("\\end{document}", tex_out);
+
+    fclose(tex_out);
+    tex_out = nullptr;
+
+    return 0;
+}
+
+#define PRINT(str) do { fprintf(tex_out, str); } while (0)
+
+#define BF do { fprintf(tex_out, "{"); } while (0)
+#define EF do { fprintf(tex_out, "}"); } while (0)
+
+#define BO do { fprintf(tex_out, "("); } while (0)
+#define BC do { fprintf(tex_out, ")"); } while (0)
+
+const int POW_P = 3;
+const int MUL_P = 2;
+const int ADD_P = 1;
+
+#define P prior
+
+int TexOut (Node_t *node, int prior)
+{
+    if (TexVerify()) return -1;
+
+    if (node == nullptr)        return NODE_PTR_IS_NULL;
+
+    if (node->value == nullptr) return NODE_VALUE_IS_NULL;
+
+    if (prior == 0) fprintf(tex_out, "\\[");
+
+    if (node->TYPE == OPER_TYPE)
+    {
+        switch (node->OPER)
+        {
+            // PRINT EXIT
+            case PI:  PRINT("\\pi");   break;
+            case EXP: PRINT("e");      break;
+
+            // PRINT LEFT, PRINT, PRINT RIGHT, EXIT
+            case POW: // prior = POW_P = 3
+                
+                if (P > POW_P) BO;
+
+                BF;
+                TexOut(LEFT,  POW_P);
+                EF;
+
+                PRINT("^");
+
+                BF;
+                TexOut(RIGHT, POW_P);
+                EF;
+
+                if (P > POW_P) BC;
+                break; 
+
+            case MUL:
+                if (P > MUL_P) BO;
+
+                BF;
+                TexOut(LEFT, MUL_P);
+                EF;
+
+                PRINT("\\cdot");
+
+                BF;
+                TexOut(RIGHT, MUL_P);
+                EF;
+
+                if (P > MUL_P) BC;
+                break; // prior = 2
+
+            // PRINT 
+            case ADD: // prior = ADD_P = 1
+                if (P > ADD_P) BO;
+
+                TexOut(LEFT,  ADD_P);
+                PRINT("+");
+                TexOut(RIGHT, ADD_P);
+
+                if (P > ADD_P) BC;
+                break; 
+            
+            case SUB: // prior = ADD_P = 1
+                if (P > ADD_P) BO;
+                
+                if (!(LEFT->TYPE == NUM_TYPE && IsZeroNum(LEFT->NUM)))
+                    TexOut(LEFT,  ADD_P);
+                
+                PRINT("-");
+
+                TexOut(RIGHT, ADD_P);
+
+                if (P > ADD_P) BC;
+                break;
+
+            // PRINT, PRINT LEFT, PRINT RIGHT, EXIT
+            case DIV:
+                if (P > MUL_P) BO;
+
+                PRINT("\\frac");
+                
+                BF;
+                TexOut(LEFT, MUL_P);
+                EF;
+
+                BF;
+                TexOut(RIGHT, MUL_P);
+                EF;
+
+                if (P > MUL_P) BC;
+
+                break;
+            
+            // PRINT, PRINT LEFT
+            case SIN:
+                PRINT("\\sin");
+                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BO;
+                TexOut(LEFT, ADD_P);
+                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BC;
+                break;
+
+            case COS:
+                PRINT("\\cos");
+                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BO;
+                TexOut(LEFT, ADD_P);
+                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BC;
+                break;
+
+            case LN:
+                PRINT("\\ln");
+                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BO;
+                TexOut(LEFT, ADD_P);
+                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BC;
+                break;
+
+            case LG:
+                PRINT("\\lg");
+                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BO;
+                TexOut(LEFT, ADD_P);
+                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BC;
+                break;
+
+            case SH:
+                PRINT("\\sh");
+                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BO;
+                TexOut(LEFT, ADD_P);
+                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BC;
+                break;
+
+            case CH:
+                PRINT("\\ch");
+                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BO;
+                TexOut(LEFT, ADD_P);
+                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BC;
+                break;
+            
+            default:
+                PRINT("gg, wp");
+                break;
+        }
+    }
+    else
+    if (node->TYPE == NUM_TYPE)
+    {
+        fprintf(tex_out, " %lg ", node->NUM);
+    }
+    else
+    if (node->TYPE == VAR_TYPE)
+    {
+        fprintf(tex_out, " %c ",  node->VAR);
+    }
+    else
+    {
+        fprintf(tex_out, " FATAL_ERROR\n ");
+    }
+
+    if (prior == 0) fprintf(tex_out, "\\]");
+
+    return FUNC_IS_OK;
+}
+
+int TexDump(Tree_t *tree)
+{
+    if (tree == nullptr)  return TREE_IS_NULL;
+
+    if (TreeVerify(tree)) return TreeDump(tree);
+
+    int status = FUNC_IS_OK;
+
+    TexInit();
+
+    status |= TexOut(tree->root, 0);
+
+    TexDestroy();
+
+    return status;
+}
 
 int main()
 {
@@ -1002,10 +1380,7 @@ int main()
     status |= TreeDump(differentiated_tree);
     if (status) PRINT_D(status);
 
-    status |= Simplify(differentiated_tree, &def);
-    if (status) PRINT_D(status);
-
-    status |= TreeDump(differentiated_tree);
+    status |= TexDump(differentiated_tree);
     if (status) PRINT_D(status);
 
     TreeDtor(&tree);

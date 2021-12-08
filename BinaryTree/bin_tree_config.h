@@ -4,7 +4,6 @@
 
 #include <assert.h>
 
-#include "../differentiator.h"
 #include "../debug_lib.h"
 
 enum ValueType
@@ -13,6 +12,21 @@ enum ValueType
     NUM_TYPE  = 2,
     OPER_TYPE = 3,
 };
+
+const char ADD = '+';
+const char SUB = '-';
+const char MUL = '*';
+const char DIV = '/';
+const char POW = '^';
+
+const char EXP = 'e';
+const char SIN = 's';
+const char COS = 'c';
+const char PI  = 'p';
+const char LN  = 'l';
+const char LG  = 'g';
+const char SH  = 'w';
+const char CH  = 'h';
 
 struct RT
 {

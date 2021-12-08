@@ -333,6 +333,14 @@ static void PrintNode     (const Node_t *node, const size_t *number_of_node, FIL
                 fprintf(dump_file, "%c", node->value->oper);
                 break;
             
+            case EXP:
+                fprintf(dump_file, "e");
+                break;
+            
+            case PI:
+                fprintf(dump_file, "pi");
+                break;
+            
             CASE(SH);
             CASE(CH);
             CASE(SIN);
