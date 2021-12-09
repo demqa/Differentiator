@@ -2,7 +2,7 @@
 
 #define DIFF_DSL_H
 
-#define OP arg->oper
+#define OP   arg->oper
 
 #define TYPE value->type
 
@@ -23,7 +23,7 @@
     NODE->value = NAME;
     
 
-#define OPER_ARG(ARG, OPER_)   \
+#define OPER_ARG(ARG, OPER_)  \
     ARG->type = OPER_TYPE;     \
     ARG->oper = OPER_;
 
@@ -41,12 +41,12 @@
 
 
 
-#define OPER_INIT(ARG, OPER_)                    \
+#define OPER_INIT(ARG, OPER_)                   \
 do                                               \
 {                                                 \
     assert(ARG->type == 0 && ARG->oper == 0 && ARG->num == 0 && ARG->var == 0); \
     ARG->type = OPER_TYPE;                          \
-    ARG->oper = OPER_;                                \
+    ARG->oper = OPER_;                               \
 }                                                     \
 while (0)
 

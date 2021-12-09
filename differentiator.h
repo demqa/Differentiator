@@ -3,6 +3,7 @@
 
 #include <math.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 #include "BinaryTree/bin_tree.h"
 #include "MemoryDefender/memory_defender.h"
@@ -44,6 +45,7 @@ enum Changes
 // const char LG  = 'g';
 // const char SH  = 'w';
 // const char CH  = 'h';
+// const char EQ  = '=';
 
 enum DifferentiatorStatus
 {
@@ -74,12 +76,18 @@ enum DifferentiatorStatus
     NODE_VALUE_IS_NULL                               = 1 << 20,
     FLAG_IS_NULL                                     = 1 << 21,
     DEF_IS_NULL                                      = 1 << 22,
+
+    WRONG_ORDER                                      = 1 << 23,
     
 };
 
 int CopyNodes(Node_t *node, Node_t **copy, Node_t *parent,                      MemoryDefender *def);
 int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable, MemoryDefender *def);
 int Simplify(Tree_t *tree, MemoryDefender *def);
+
+int Differentiate(Tree_t *tree, Tree_t **tree_res,         const char variable, MemoryDefender *def);
+
+int IsZeroNum (double x);
 
 Node_t  *GetE(char **, MemoryDefender *);
 Node_t  *GetN(char **, MemoryDefender *);

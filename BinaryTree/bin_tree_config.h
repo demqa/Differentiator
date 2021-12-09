@@ -27,6 +27,7 @@ const char LN  = 'l';
 const char LG  = 'g';
 const char SH  = 'w';
 const char CH  = 'h';
+const char EQ  = '=';
 
 struct RT
 {

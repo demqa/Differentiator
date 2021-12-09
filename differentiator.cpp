@@ -1,4 +1,5 @@
 #include "differentiator.h"
+#include "tex.h"
 #include "debug_lib.h"
 
 int Filesize  (FILE *stream, size_t *filesize)
@@ -175,7 +176,7 @@ int ReadNum (char **ptr, double *num)
 
     if (num == nullptr)                    return 0;
 
-    size_t check = 0;
+    int check = 0;
     sscanf(*ptr, "%lf%n", num, &check);
 
     (*ptr) += check;
@@ -210,6 +211,7 @@ Node_t *GetG(char **ptr, MemoryDefender *def)
 
 Node_t *GetW(char **ptr, MemoryDefender *def)
 {
+    
     if (ptr == nullptr || *ptr == nullptr) return nullptr;
 
     if (def == nullptr)                    return nullptr;
@@ -232,6 +234,7 @@ Node_t *GetW(char **ptr, MemoryDefender *def)
 
         val = node;
     }
+    
     return val;
 }
 
@@ -261,6 +264,7 @@ Node_t *GetT(char **ptr, MemoryDefender *def)
         
         val = node;
     }
+
     return val;
 }
 
@@ -290,6 +294,7 @@ Node_t *GetE(char **ptr, MemoryDefender *def)
         
         val = node;
     }
+
     return val;
 }
 
@@ -636,7 +641,7 @@ int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable, 
 
         if (arg->oper == DIV)
         {
-            OPER_INIT(new_arg, arg->oper);
+            OPER_INIT(new_arg, DIV);
 
             OP_NODE_INIT(SUB, L, node, left);
 
@@ -991,7 +996,7 @@ int SimplifyNodesUniq(Node_t **node_, int *flag, MemoryDefender *def)
 
             case SUB:
                 if (LEFT->TYPE  == VAR_TYPE && RIGHT->TYPE == VAR_TYPE &&
-                    LEFT->VAR == RIGHT->VAR)
+                    RIGHT->VAR  == LEFT->VAR)
                 {
                     ASSIGN_VALUE(0);
 
@@ -1026,6 +1031,12 @@ int SimplifyNodesUniq(Node_t **node_, int *flag, MemoryDefender *def)
                 if (LEFT->TYPE  == NUM_TYPE && IsZeroNum(LEFT->NUM))
                 {
                     ASSIGN_VALUE(0);
+                
+                    return status;
+                }
+                if (RIGHT->TYPE == NUM_TYPE && IsEqualNum(RIGHT->NUM, 1))
+                {
+                    RECONNECT(LEFT, RIGHT);
                 
                     return status;
                 }
@@ -1105,244 +1116,6 @@ int Simplify(Tree_t *tree, MemoryDefender *def)
     return status;
 }
 
-FILE *tex_out = nullptr;
-
-int TexVerify()
-{
-    if (tex_out == nullptr)
-        return 1;
-
-    return 0;
-}
-
-int TexInit()
-{
-    if (tex_out)
-    {
-        fprintf(stderr, "tex is already opened\n");
-        return 0;
-    }
-
-    tex_out = fopen("out.tex", "w");
-    if (tex_out == nullptr)
-    {
-        fprintf(stderr, "tex cringe\n");
-        return -1;
-    }
-
-    fputs("\\documentclass{article}\n", tex_out);
-    fputs("\\begin{document}       \n", tex_out);
-    fputs("\n",                         tex_out);
-
-}
-
-int TexDestroy()
-{
-    if (TexVerify())
-        return -1;
-
-    fputs("\n",              tex_out);
-    fputs("\n",              tex_out);
-    fputs("\\end{document}", tex_out);
-
-    fclose(tex_out);
-    tex_out = nullptr;
-
-    return 0;
-}
-
-#define PRINT(str) do { fprintf(tex_out, str); } while (0)
-
-#define BF do { fprintf(tex_out, "{"); } while (0)
-#define EF do { fprintf(tex_out, "}"); } while (0)
-
-#define BO do { fprintf(tex_out, "("); } while (0)
-#define BC do { fprintf(tex_out, ")"); } while (0)
-
-const int POW_P = 3;
-const int MUL_P = 2;
-const int ADD_P = 1;
-
-#define P prior
-
-int TexOut (Node_t *node, int prior)
-{
-    if (TexVerify()) return -1;
-
-    if (node == nullptr)        return NODE_PTR_IS_NULL;
-
-    if (node->value == nullptr) return NODE_VALUE_IS_NULL;
-
-    if (prior == 0) fprintf(tex_out, "\\[");
-
-    if (node->TYPE == OPER_TYPE)
-    {
-        switch (node->OPER)
-        {
-            // PRINT EXIT
-            case PI:  PRINT("\\pi");   break;
-            case EXP: PRINT("e");      break;
-
-            // PRINT LEFT, PRINT, PRINT RIGHT, EXIT
-            case POW: // prior = POW_P = 3
-                
-                if (P > POW_P) BO;
-
-                BF;
-                TexOut(LEFT,  POW_P);
-                EF;
-
-                PRINT("^");
-
-                BF;
-                TexOut(RIGHT, POW_P);
-                EF;
-
-                if (P > POW_P) BC;
-                break; 
-
-            case MUL:
-                if (P > MUL_P) BO;
-
-                BF;
-                TexOut(LEFT, MUL_P);
-                EF;
-
-                PRINT("\\cdot");
-
-                BF;
-                TexOut(RIGHT, MUL_P);
-                EF;
-
-                if (P > MUL_P) BC;
-                break; // prior = 2
-
-            // PRINT 
-            case ADD: // prior = ADD_P = 1
-                if (P > ADD_P) BO;
-
-                TexOut(LEFT,  ADD_P);
-                PRINT("+");
-                TexOut(RIGHT, ADD_P);
-
-                if (P > ADD_P) BC;
-                break; 
-            
-            case SUB: // prior = ADD_P = 1
-                if (P > ADD_P) BO;
-                
-                if (!(LEFT->TYPE == NUM_TYPE && IsZeroNum(LEFT->NUM)))
-                    TexOut(LEFT,  ADD_P);
-                
-                PRINT("-");
-
-                TexOut(RIGHT, ADD_P);
-
-                if (P > ADD_P) BC;
-                break;
-
-            // PRINT, PRINT LEFT, PRINT RIGHT, EXIT
-            case DIV:
-                if (P > MUL_P) BO;
-
-                PRINT("\\frac");
-                
-                BF;
-                TexOut(LEFT, MUL_P);
-                EF;
-
-                BF;
-                TexOut(RIGHT, MUL_P);
-                EF;
-
-                if (P > MUL_P) BC;
-
-                break;
-            
-            // PRINT, PRINT LEFT
-            case SIN:
-                PRINT("\\sin");
-                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BO;
-                TexOut(LEFT, ADD_P);
-                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BC;
-                break;
-
-            case COS:
-                PRINT("\\cos");
-                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BO;
-                TexOut(LEFT, ADD_P);
-                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BC;
-                break;
-
-            case LN:
-                PRINT("\\ln");
-                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BO;
-                TexOut(LEFT, ADD_P);
-                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BC;
-                break;
-
-            case LG:
-                PRINT("\\lg");
-                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BO;
-                TexOut(LEFT, ADD_P);
-                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BC;
-                break;
-
-            case SH:
-                PRINT("\\sh");
-                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BO;
-                TexOut(LEFT, ADD_P);
-                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BC;
-                break;
-
-            case CH:
-                PRINT("\\ch");
-                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BO;
-                TexOut(LEFT, ADD_P);
-                if (NodeIsTerminal(LEFT) != NODE_IS_TERMINAL) BC;
-                break;
-            
-            default:
-                PRINT("gg, wp");
-                break;
-        }
-    }
-    else
-    if (node->TYPE == NUM_TYPE)
-    {
-        fprintf(tex_out, " %lg ", node->NUM);
-    }
-    else
-    if (node->TYPE == VAR_TYPE)
-    {
-        fprintf(tex_out, " %c ",  node->VAR);
-    }
-    else
-    {
-        fprintf(tex_out, " FATAL_ERROR\n ");
-    }
-
-    if (prior == 0) fprintf(tex_out, "\\]");
-
-    return FUNC_IS_OK;
-}
-
-int TexDump(Tree_t *tree)
-{
-    if (tree == nullptr)  return TREE_IS_NULL;
-
-    if (TreeVerify(tree)) return TreeDump(tree);
-
-    int status = FUNC_IS_OK;
-
-    TexInit();
-
-    status |= TexOut(tree->root, 0);
-
-    TexDestroy();
-
-    return status;
-}
 
 int main()
 {
@@ -1367,9 +1140,6 @@ int main()
     status |= TreeFill(&tree, stream, &buffer, &def);
     if (status) PRINT_D(status);
 
-    status |= TreeDump(&tree);
-    if (status) PRINT_D(status);
-
     Tree_t *differentiated_tree = nullptr;
 
     status |= Differentiate(&tree, &differentiated_tree, 'x', &def);
@@ -1377,15 +1147,25 @@ int main()
 
     // i haven't got any idea about diff_tree->size ))))))
 
-    status |= TreeDump(differentiated_tree);
-    if (status) PRINT_D(status);
+    // status |= TreeDump(differentiated_tree);
+    // if (status) PRINT_D(status);
+
+
+    TexInit();
+
+    TexPrint("fuck_my_life");
 
     status |= TexDump(differentiated_tree);
     if (status) PRINT_D(status);
 
+    TexDestroy();
+    // I WANT TO DIE, NOT TO DO THIS SHIT
+    // status |= TexStory(&tree, &def);
+    // if (status) PRINT_D(status);
+
     TreeDtor(&tree);
 
-    TreeDtor(differentiated_tree);
+    // TreeDtor(differentiated_tree);
 
     DefenderClear(&def);
 
