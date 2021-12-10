@@ -1,5 +1,6 @@
 #include "tex.h"
 
+
 static FILE *tex_out = nullptr;
 
 int TexVerify()
@@ -25,10 +26,13 @@ int TexInit()
         return -1;
     }
 
-    fputs("\\usepackage [utf8x] {inputenc}\n", tex_out);
-    fputs("\\documentclass{article}\n",        tex_out);
-    fputs("\\begin{document}       \n",        tex_out);
-    fputs("\n",                                tex_out);
+    
+
+
+    fputs("\\input{header.tex}     \n", tex_out);
+    fputs("\\usepackage{upgreek} \n\n", tex_out);
+    
+    fputs("\\begin{document}     \n\n", tex_out);
 
 }
 
@@ -102,24 +106,37 @@ int PrintFunc(Node_t *node, int oper)
     return status;
 }   
 
-int OpenBr()
+int OpenFormula()
 {
-    if (tex_out) fprintf(tex_out, "\\[");
+    if (tex_out) fprintf(tex_out, "\\begin{dmath}\n");
+    // if (tex_out) fprintf(tex_out, "\\[");
+    
 }
 
-int ClosBr()
+int ClosFormula()
 {
-    if (tex_out) fprintf(tex_out, "\\]\n");
+    if (tex_out) fprintf(tex_out, "\n\\end{dmath}\n");
+    // if (tex_out) fprintf(tex_out, "\\]\n");
 }
 
-int OpenF()
+int OpenFig()
 {
     if (tex_out) fprintf(tex_out, "{");
 }
 
-int ClosF()
+int ClosFig()
 {
     if (tex_out) fprintf(tex_out, "}");
+}
+
+int OpenBr()
+{
+    if (tex_out) fprintf(tex_out, "(");
+}
+
+int ClosBr()
+{
+    if (tex_out) fprintf(tex_out, ")");
 }
 
 int PrintOper(int oper)
@@ -128,20 +145,20 @@ int PrintOper(int oper)
 
     switch (oper)
     {
-        case MUL: fputs("\\cdot", tex_out); break;
-        case ADD: fputs("+",      tex_out); break;
-        case SUB: fputs("-",      tex_out); break;
-        case POW: fputs("^",      tex_out); break;
-        case DIV: fputs("\\frac", tex_out); break;
-        case SIN: fputs("\\sin",  tex_out); break;
-        case COS: fputs("\\cos",  tex_out); break;
-        case LN:  fputs("\\ln",   tex_out); break;
-        case LG:  fputs("\\lg",   tex_out); break;
-        case SH:  fputs("\\sh",   tex_out); break;
-        case CH:  fputs("\\ch",   tex_out); break;
-        case PI:  fputs("\\pi",   tex_out); break;
-        case EXP: fputs("e",      tex_out); break;
-        case EQ:  fputs("=",      tex_out); break;
+        case MUL: fputs(" \\cdot ",  tex_out); break;
+        case ADD: fputs(" + ",       tex_out); break;
+        case SUB: fputs(" - ",       tex_out); break;
+        case POW: fputs(" ^ ",       tex_out); break;
+        case DIV: fputs(" \\cfrac ", tex_out); break;
+        case SIN: fputs(" \\sin ",   tex_out); break;
+        case COS: fputs(" \\cos ",   tex_out); break;
+        case LN:  fputs(" \\ln ",    tex_out); break;
+        case LG:  fputs(" \\lg ",    tex_out); break;
+        case SH:  fputs(" \\sh ",    tex_out); break;
+        case CH:  fputs(" \\ch ",    tex_out); break;
+        case PI:  fputs(" \\pi ",    tex_out); break;
+        case EXP: fputs(" e ",       tex_out); break;
+        case EQ:  fputs(" = ",       tex_out); break;
 
         default:
             fprintf(stderr, "WHAT THE HELL OPERATOR YOU WANT\n");
@@ -169,7 +186,7 @@ int TexOut   (Node_t *node, int prior, int diff)
     if (node->value == nullptr) return NODE_VALUE_IS_NULL;
 
     if (prior == 0)
-        OpenBr();
+        OpenFormula();
     
     if (diff == 1) fprintf(tex_out, "(");
 
@@ -222,7 +239,7 @@ int TexOut   (Node_t *node, int prior, int diff)
     }
 
     if (prior == 0)
-        ClosBr();
+        ClosFormula();
     
     if (diff == 1) fprintf(tex_out, ")\'");
 
@@ -254,173 +271,496 @@ int Phrase()
 {
     if (TexVerify() || Phrases == nullptr)
         return -1;
-    
-    return 0;
 
-    fprintf(tex_out, "\n\\text{%s}\n", Phrases[NumPhrase()]);
+    fprintf(tex_out, "\n\n\\text{%s}\n", Phrases[NumPhrase()]);
     fputs("\n\n", tex_out);
 
     return 0;
 }
 
-// int TexStoryOut(Node_t *node, Node_t *diff)
-// {
-//     if (node == nullptr) return NODE_PTR_IS_NULL;
+int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable, MemoryDefender *def)
+{
+    if (node == nullptr)                     return NODE_PTR_IS_NULL;
 
-//     if (diff == nullptr) return NODE_PTR_IS_NULL;
+    if (diff == nullptr || *diff != nullptr) return PTR_IS_NULL;
 
-//     int status = FUNC_IS_OK;
+    NODE_INIT(new_node, parent);
 
-//     OpenBr();
-//     status |= TexOut(node, 1, 1);
-
-//     PrintOper(EQ);
-
-//     // if (rand() < 5000)
-//     // {
-//     //     Phrase();
-//     //     status |= TexOut(diff, 1, 0);
-//     //     return status;
-//     // }
-
-//     if (node->TYPE == OPER_TYPE)
-//     {
-//         switch (node->OPER)
-//         {
-//             case ADD:
-//             case SUB:
-//                 status |= TexOut(LEFT,  1, 1);
-
-//                 PrintOper(node->OPER);
-
-//                 status |= TexOut(RIGHT, 1, 1);
-
-//                 ClosBr();
-
-//                 Phrase();
-//                 status |= TexStoryOut(LEFT,  diff->left);
-//                 status |= TexStoryOut(RIGHT, diff->right);
-//                 break;
-            
-//             case MUL:
-//                 status |= TexOut(LEFT,  2, 1);
-//                 PrintOper(MUL);
-//                 status |= TexOut(RIGHT, 2, 0);
-
-//                 PrintOper(ADD);
-
-//                 status |= TexOut(LEFT,  2, 0);
-//                 PrintOper(MUL);
-//                 status |= TexOut(RIGHT, 2, 1);
-//                 ClosBr();
-
-//                 Phrase();
-//                 status |= TexStoryOut(LEFT,  diff->left->left);
-//                 status |= TexStoryOut(RIGHT, diff->right->right);
-//                 break;
-
-//             case DIV:
-//                 PrintOper(DIV);
-
-//                 OpenF();
-
-//                 status |= TexOut(LEFT,  2, 1);
-//                 PrintOper(MUL);
-//                 status |= TexOut(RIGHT, 2, 0);
-
-//                 PrintOper(SUB);
-
-//                 status |= TexOut(LEFT,  2, 0);
-//                 PrintOper(MUL);
-//                 status |= TexOut(RIGHT, 2, 1);
-
-//                 ClosF();
-
-//                 OpenF();
-
-//                 OpenF();
-//                 status |= TexOut(LEFT, 1, 0);
-//                 ClosF();
-
-//                 PrintOper(POW);
-
-//                 PrintNum(2);
-
-//                 ClosF();
-
-//                 ClosBr();
-
-//                 Phrase();
-//                 status |= TexStoryOut(LEFT,  diff->left->left->left);
-//                 status |= TexStoryOut(RIGHT, diff->left->right->right);
-//                 break;
-
-//             default:
-//                 Phrase();
-//                 status |= TexOut(diff, 1, 0);
-//                 ClosBr();
-//                 break;
-//         }
-//     }
-//     else
-//     if (node->TYPE == NUM_TYPE)
-//     {
-//         Phrase();
-//         PrintNum(0);
-//         //status |= TexOut(diff, 1, 0);
-//         ClosBr();
-//     }
-//     else
-//     if (node->TYPE == VAR_TYPE)
-//     {
+    if (node->value == nullptr)              return NODE_VALUE_IS_NULL;
         
-//         Phrase();
-//         PrintNum(1);
-//         // status |= TexOut(diff, 1, 0);
-//         ClosBr();
-//     }
-//     else
-//         return EXCEPTION_UNEXPECTED_VALUE_TYPE;
+    RT *arg = node->value;
 
-//     return status;
-// }
+    int status = FUNC_IS_OK;
 
-// int TexStory (Tree_t *tree, MemoryDefender *def)
-// {
-//     if (tree == nullptr)       return TREE_IS_NULL;
-    
-//     if (TreeVerify(tree))      return TreeDump(tree);
+    ARG__INIT (new_arg);
 
-//     if (tree->root == nullptr) return TREE_ROOT_IS_NULL;
+    ARG_ASSIGN(new_node, new_arg);
 
-//     if (def == nullptr)        return PTR_IS_NULL;
+    Phrase();
 
-//     int status = FUNC_IS_OK;
+    OpenFormula();
+    status |= TexOut(node, 1, 1);
 
-//     TexInit();
+    PrintOper(EQ);
 
-//     OpenBr();
+    if (rand() < 5000)
+    {
+        Phrase();
+        status |= TexOut(node, 1, 0);
+        return status;
+    }
 
-//     status |= TexOut(tree->root, 1, 1);
+    *diff = new_node;
+    Tree_t tr = {};
 
-//     PrintOper(EQ);
+    if (arg->type == OPER_TYPE)
+    {
+        assert(NodeIsTerminal(node) != NODE_IS_TERMINAL || IsConstant(OP));
 
-//     Tree_t *diff = nullptr;
+        assert(arg->num == 0 && arg->var == 0);
 
-//     status |= Differentiate(tree, &diff, 'x', def);
+        if (IsConstant(OP))
+        {
+            PrintNum(0);
+            ClosFormula();
+
+            ZERO_INIT(new_arg);
+        }
+
+        if (arg->oper == ADD || arg->oper == SUB)
+        {
+            status |= TexOut(LEFT,  ADD_P, 1);
+
+            PrintOper(OP);
+
+            status |= TexOut(RIGHT, ADD_P, 1);
+
+            ClosFormula();
+
+            OPER_INIT(new_arg, arg->oper);
+            
+            DIFF(LEFT,  node, left);
+            DIFF(RIGHT, node, right);
+        }
+
+        if (arg->oper == MUL)
+        {
+            status |= TexOut(LEFT,  MUL_P, 1);
+            PrintOper(MUL);
+            status |= TexOut(RIGHT, MUL_P, 0);
+
+            PrintOper(ADD);
+
+            status |= TexOut(LEFT,  MUL_P, 0);
+            PrintOper(MUL);
+            status |= TexOut(RIGHT, MUL_P, 1);
+
+            ClosFormula();
+
+            OPER_INIT(new_arg, ADD);
+
+            OP_NODE_INIT(MUL, L, node, left);
+
+            DIFF(LEFT,  L, left);
+            COPY(RIGHT, L, right);
+
+            OP_NODE_INIT(MUL, R, node, right);
+            
+            COPY(LEFT,  R, left);
+            DIFF(RIGHT, R, right);
+        }
+
+        if (arg->oper == DIV)
+        {
+            PrintOper(DIV);
+
+            OpenFig();
+
+            status |= TexOut(LEFT,  MUL_P, 1);
+            PrintOper(MUL);
+            status |= TexOut(RIGHT, MUL_P, 0);
+
+            PrintOper(SUB);
+
+            status |= TexOut(LEFT,  MUL_P, 0);
+            PrintOper(MUL);
+            status |= TexOut(RIGHT, MUL_P, 1);
+
+            ClosFig();
+
+            OpenFig();
+
+            OpenFig();
+            status |= TexOut(RIGHT, 1, 0);
+            ClosFig();
+
+            PrintOper(POW);
+
+            PrintNum(2);
+
+            ClosFig();
+
+            ClosFormula();
+
+            OPER_INIT(new_arg, DIV);
+
+            OP_NODE_INIT(SUB, L, node, left);
+
+            OP_NODE_INIT(MUL, LL, L, left);
+            DIFF(LEFT,  LL, left);
+            COPY(RIGHT, LL, right);
+
+            OP_NODE_INIT(MUL, LR, L, right);
+            COPY(LEFT,  LR, left);
+            DIFF(RIGHT, LR, right);
+
+            OP_NODE_INIT(POW, R, node, right);
+            COPY(RIGHT, R, left);
+
+            NUM_NODE_INIT(2, RR, R, right);
+        }
+
+        if (arg->oper == POW)
+        {
+            if (IsConst(node->left,  variable) == VARIABLE &&
+                IsConst(node->right, variable) == CONST)
+            {
+                OpenFig();
+
+                OpenBr();
+
+                status |= TexOut(RIGHT, ADD_P, 0);
+                PrintOper(SUB);
+                PrintNum (1);
+
+                ClosBr();
+
+                PrintOper(MUL);
+
+                status |= TexOut(LEFT,  POW_P, 0);
+
+                PrintOper(POW);
+
+                OpenFig();
+
+                status |= TexOut(RIGHT,  ADD_P, 0);
+                PrintOper(SUB);
+                PrintNum (1);
+
+                ClosFig();
+
+                PrintOper(MUL);
+
+                status |= TexOut(LEFT,  MUL_P, 1);
+
+                ClosFig();
+
+                ClosFormula();
+
+
+                OPER_INIT(new_arg, MUL);
+
+                OP_NODE_INIT(MUL, L, node, left);
+
+                COPY(RIGHT, L, left);
+
+                OP_NODE_INIT(POW, LR, L, right);
+
+                COPY(LEFT, LR, left);
+
+                OP_NODE_INIT(SUB, LRR, LR, right);
+                COPY(RIGHT, LRR, left);
+                NUM_NODE_INIT(1, LRRR, LRR, right);
+
+                DIFF(LEFT, node, right);
+            }
+            else
+            if (IsConst(node->left,  variable) == CONST &&
+                IsConst(node->right, variable) == VARIABLE)
+            {
+                OpenFig();
+
+                status |= TexOut(LEFT,  POW_P, 0);
+
+                ClosFig();
+
+                PrintOper(POW);
+
+                OpenFig();
+
+                status |= TexOut(RIGHT, POW_P, 0);
+
+                ClosFig();
+
+                PrintOper(MUL);
+
+                PrintOper(LN);
+                status |= TexOut(LEFT,  MUL, 0);
+
+                PrintOper(MUL);
+
+                status |= TexOut(RIGHT, ADD_P, 1);
+
+                ClosFormula();
+
+
+                OPER_INIT(new_arg, MUL);
+
+                OP_NODE_INIT(POW, L, node, left);
+                COPY(LEFT,  L, left);
+                COPY(RIGHT, L, right);
+
+                OP_NODE_INIT(MUL, R, node, right);
+                OP_NODE_INIT(LN, RL, R, left);
+                COPY(LEFT, RL, left);
+
+                DIFF(RIGHT, R, right);
+            }
+            else
+            if (IsConst(node->left,  variable) == VARIABLE &&
+                IsConst(node->right, variable) == VARIABLE)
+            {
+                OpenFig();
+                status |= TexOut(LEFT,  POW_P, 0);
+                ClosFig();
+
+                PrintOper(POW);
+
+                OpenFig();
+                status |= TexOut(RIGHT, POW_P, 0);
+                ClosFig();
+
+                PrintOper(MUL);
+
+                OpenBr();
+
+                PrintOper(LN);
+                status |= TexOut(LEFT,  POW_P, 0);
+                
+                PrintOper(MUL);
+
+                status |= TexOut(RIGHT, ADD_P, 1);
+
+                PrintOper(ADD);
+
+                PrintOper(DIV);
+
+                OpenFig();
+                status |= TexOut(LEFT,  ADD_P, 1);
+                PrintOper(MUL);
+                status |= TexOut(RIGHT, MUL_P, 0);
+                ClosFig();
+
+                OpenFig();
+                status |= TexOut(LEFT,  MUL_P, 0);
+                ClosFig();
+
+                ClosBr();
+
+                ClosFormula();
+
+                OPER_INIT(new_arg, MUL);
+
+                OP_NODE_INIT(POW, L, node, left);
+                COPY(LEFT,  L, left);
+                COPY(RIGHT, L, right);
+
+                OP_NODE_INIT(ADD, R, node, right);
+
+                OP_NODE_INIT(MUL, RL, R, left);
+                DIFF(RIGHT, RL, left);
+                OP_NODE_INIT(LN, RLR, RL, right);
+                COPY(LEFT, RLR, left);
+
+                OP_NODE_INIT(DIV, RR, R, right);
+
+                OP_NODE_INIT(MUL, RRL, RR, left);
+                DIFF(LEFT, RRL, left);
+                COPY(RIGHT, RRL, right);
+                
+                COPY(LEFT, RR, right);
+            }
+            else
+            {
+                PrintNum(0);
+                ClosFormula();
+
+                NUM__INIT(new_arg, 0);
+                return status;
+            }
+            
+        }
+
+        if (arg->oper == SIN)
+        {
+            PrintOper(COS);
+            status |= TexOut(LEFT,  POW_P, 0);
+
+            PrintOper(MUL);
+
+            status |= TexOut(LEFT,  ADD_P, 1);
+
+            ClosFormula();
+
+            OPER_INIT(new_arg, MUL);
+
+            OP_NODE_INIT(COS, L, node, left);
+            COPY(LEFT, L, left);
+
+            DIFF(LEFT, node, right);
+        }
+
+        if (arg->oper == COS)
+        {
+            PrintOper(SUB);
+            PrintOper(SIN);
+            status |= TexOut(LEFT,  POW_P, 0);
+
+            PrintOper(MUL);
+
+            status |= TexOut(LEFT,  ADD_P, 1);
+
+            ClosFormula();
+
+            OPER_INIT(new_arg, MUL);
+
+            OP_NODE_INIT(SUB, L, node, left);
+
+            NUM_NODE_INIT(0, LL, L, left);
+
+            OP_NODE_INIT(SIN, LR, L, right);
+            COPY(LEFT, LR, left);
+
+            DIFF(LEFT, node, right);
+        }
+
+        if (arg->oper == LN)
+        {
+            PrintOper(DIV);
+
+            OpenFig();
+            status |= TexOut(LEFT,  ADD_P, 1);
+            ClosFig();
+
+            OpenFig();
+            status |= TexOut(LEFT,  ADD_P, 0);
+            ClosFig();
+
+            ClosFormula();
+
+            OPER_INIT(new_arg, DIV);
+
+            DIFF(LEFT, node, left);
+            
+            COPY(LEFT, node, right);
+        }
+
+        if (arg->oper == LG)
+        {
+            PrintOper(DIV);
+
+            OpenFig();
+            status |= TexOut(LEFT,  ADD_P, 1);
+            ClosFig();
+
+            OpenFig();
+            status |= TexOut(LEFT,  MUL_P, 0);
+            PrintOper(MUL);
+            PrintOper(LN);
+            PrintNum (10);
+            ClosFig();
+
+            ClosFormula();
+
+            OPER_INIT(new_arg, DIV);
+
+            DIFF(LEFT, node, left);
+            
+            OP_NODE_INIT(MUL, R, node, right);
+            COPY(LEFT, R, left);
+            OP_NODE_INIT(LN, RR, R, right);
+            NUM_NODE_INIT(10, RRL, RR, left);
+        }
+
+        if (arg->oper == SH)
+        {
+            PrintOper(CH);
+            status |= TexOut(LEFT,  POW_P, 0);
+
+            PrintOper(MUL);
+
+            status |= TexOut(LEFT,  ADD_P, 1);
+
+            ClosFormula();
+
+            OPER_INIT(new_arg, MUL);
+
+            OP_NODE_INIT(CH, L, node, left);
+            COPY(LEFT, L, left);
+
+            DIFF(LEFT, node, right);
+        }
+
+        if (arg->oper == CH)
+        {
+            PrintOper(SH);
+            status |= TexOut(LEFT,  POW_P, 0);
+
+            PrintOper(MUL);
+
+            status |= TexOut(LEFT,  ADD_P, 1);
+
+            ClosFormula();
+
+            OPER_INIT(new_arg, MUL);
+
+            OP_NODE_INIT(SH, L, node, left);
+            COPY(LEFT, L, left);
+
+            DIFF(LEFT, node, right);
+        }
+    }
+    else
+    if (arg->type ==  NUM_TYPE)
+    {
+        assert(NodeIsTerminal(node) == NODE_IS_TERMINAL);
+
+        assert(arg->oper == 0 && arg->var == 0);
+
+        PrintNum   (0);
+        ClosFormula();
+
+        ZERO_INIT(new_arg);
+    }
+    else
+    if (arg->type ==  VAR_TYPE)
+    {
+        assert(NodeIsTerminal(node) == NODE_IS_TERMINAL);
+
+        assert(arg->oper == 0 && arg->num == 0);
+
+        if (arg->var == variable)
+        {
+            PrintNum(1);
+            ClosFormula();
+
+            ONE__INIT(new_arg);
+        }
+        else
+        {
+            PrintNum(0);
+            ClosFormula();
+
+            ZERO_INIT(new_arg);
+        }
+    }   
+    else
+        return EXCEPTION_UNEXPECTED_VALUE_TYPE;
+
+    return status;
+}
 
 //     // fputs("\\text{Предельно понятно, что это примерно}\n", tex_out);
 
-//     status |= TexOut(diff->root, 1, 0);
-
-//     ClosBr();
-
 //     // fputs("\\text{Это конечно всё очень хорошо, но давайте по-порядку...}\n"
 //     //       "\\text{Для начала:}\n", tex_out);
-    
-//     status |= TexStoryOut(tree->root, diff->root);
-
-//     TexDestroy();
-
-//     return status;
-// }

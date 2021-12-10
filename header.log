@@ -1,0 +1,272 @@
+This is TeX, Version 3.14159265 (TeX Live 2017/Debian) (preloaded format=tex 2021.12.9)  10 DEC 2021 04:49
+**header.tex
+(./header.tex
+! Undefined control sequence.
+l.2 \documentclass
+                  [a4paper,14pt]{article}
+? 
+! Interruption.
+<to be read again> 
+                   [
+l.2 \documentclass[
+                   a4paper,14pt]{article}
+? 
+! Undefined control sequence.
+l.5 \usepackage
+               {cmap}^^I^^I^^I^^I^^I% ^^d0^^bf^^d0^^be^^d0^^b8^^d1^^81^^d0^^...
+
+? 
+! Interruption.
+<to be read again> 
+                   {
+l.5 \usepackage{
+                cmap}^^I^^I^^I^^I^^I% ^^d0^^bf^^d0^^be^^d0^^b8^^d1^^81^^d0^^...
+
+? 
+! Undefined control sequence.
+l.6 \usepackage
+               [warn]{mathtext}
+? 
+! Undefined control sequence.
+l.7 \usepackage
+               [T2A]{fontenc}^^I^^I^^I% ^^d0^^ba^^d0^^be^^d0^^b4^^d0^^b8^^d1...
+
+? 
+! Undefined control sequence.
+l.8 \usepackage
+               [utf8]{inputenc}^^I^^I^^I% ^^d0^^ba^^d0^^be^^d0^^b4^^d0^^b8^^...
+
+? 
+! Undefined control sequence.
+l.9 \usepackage
+               [english,russian]{babel}^^I% ^^d0^^bb^^d0^^be^^d0^^ba^^d0^^b0...
+
+? 
+! Undefined control sequence.
+l.10 \usepackage
+                {mathtext} ^^I^^I^^I^^I% ^^d1^^80^^d1^^83^^d1^^81^^d1^^81^^d...
+
+? 
+! Undefined control sequence.
+l.11 \usepackage
+                {csvsimple}              % for tabular from csv loading
+? 
+! Undefined control sequence.
+l.12 \usepackage
+                {indentfirst}            % indent after sections
+? 
+! Undefined control sequence.
+l.16 \usepackage
+                {amsmath,amsfonts,amssymb,amsthm,mathtools} % AMS
+? 
+! Undefined control sequence.
+l.18 \usepackage
+                {pdflscape}
+? 
+! Undefined control sequence.
+l.19 \usepackage
+                {breqn}
+? 
+! Undefined control sequence.
+l.26 \usepackage
+                {euscript}^^I % ^^d0^^a8^^d1^^80^^d0^^b8^^d1^^84^^d1^^82 ^^d...
+
+? 
+! Undefined control sequence.
+l.27 \usepackage
+                {mathrsfs} % ^^d0^^9a^^d1^^80^^d0^^b0^^d1^^81^^d0^^b8^^d0^^b...
+
+? 
+! Undefined control sequence.
+l.30 \DeclareMathOperator
+                         {\sgn}{\mathop{sgn}}
+? 
+! Undefined control sequence.
+l.30 \DeclareMathOperator{\sgn
+                              }{\mathop{sgn}}
+? 
+! Missing $ inserted.
+<inserted text> 
+                $
+<to be read again> 
+                   \mathop 
+l.30 \DeclareMathOperator{\sgn}{\mathop
+                                       {sgn}}
+? 
+! Extra }, or forgotten $.
+l.30 \DeclareMathOperator{\sgn}{\mathop{sgn}}
+                                             
+? 
+! Missing $ inserted.
+<inserted text> 
+                $
+<to be read again> 
+                   \par 
+l.31 
+     
+? 
+! Undefined control sequence.
+l.33 \newcommand
+                *{\hm}[1]{#1\nobreak\discretionary{}
+? 
+! Undefined control sequence.
+l.33 \newcommand*{\hm
+                     }[1]{#1\nobreak\discretionary{}
+? 
+! You can't use `macro parameter character #' in horizontal mode.
+l.33 \newcommand*{\hm}[1]{#
+                           1\nobreak\discretionary{}
+? 
+! You can't use `macro parameter character #' in math mode.
+l.34 {\hbox{$\mathsurround=0pt #
+                                1$}}{}}
+? 
+! Undefined control sequence.
+l.37 \usepackage
+                {graphicx}  % ^^d0^^94^^d0^^bb^^d1^^8f ^^d0^^b2^^d1^^81^^d1^...
+
+? 
+! Undefined control sequence.
+l.38 \graphicspath
+                  {{images/}{images2/}}  % ^^d0^^bf^^d0^^b0^^d0^^bf^^d0^^ba^...
+
+? 
+! Undefined control sequence.
+l.39 \setlength
+               \fboxsep{3pt} % ^^d0^^9e^^d1^^82^^d1^^81^^d1^^82^^d1^^83^^d0^...
+
+? 
+! Undefined control sequence.
+l.39 \setlength\fboxsep
+                       {3pt} % ^^d0^^9e^^d1^^82^^d1^^81^^d1^^82^^d1^^83^^d0^...
+
+? 
+! Undefined control sequence.
+l.40 \setlength
+               \fboxrule{1pt} % ^^d0^^a2^^d0^^be^^d0^^bb^^d1^^89^^d0^^b8^^d0...
+
+? 
+! Undefined control sequence.
+l.40 \setlength\fboxrule
+                        {1pt} % ^^d0^^a2^^d0^^be^^d0^^bb^^d1^^89^^d0^^b8^^d0...
+
+? 
+! Undefined control sequence.
+l.41 \usepackage
+                {wrapfig} % ^^d0^^9e^^d0^^b1^^d1^^82^^d0^^b5^^d0^^ba^^d0^^b0...
+
+? 
+! Undefined control sequence.
+l.44 \usepackage
+                {array,tabularx,tabulary,booktabs} % ^^d0^^94^^d0^^be^^d0^^b...
+
+? 
+! Undefined control sequence.
+l.45 \usepackage
+                {longtable}  % ^^d0^^94^^d0^^bb^^d0^^b8^^d0^^bd^^d0^^bd^^d1^...
+
+? 
+! Undefined control sequence.
+l.46 \usepackage
+                {multirow} % ^^d0^^a1^^d0^^bb^^d0^^b8^^d1^^8f^^d0^^bd^^d0^^b...
+
+? 
+! Undefined control sequence.
+l.49 \theoremstyle
+                  {plain} % ^^d0^^ad^^d1^^82^^d0^^be ^^d1^^81^^d1^^82^^d0^^b...
+
+? 
+! Undefined control sequence.
+l.61 \usepackage
+                {etoolbox} % ^^d0^^bb^^d0^^be^^d0^^b3^^d0^^b8^^d1^^87^^d0^^b...
+
+? 
+! Undefined control sequence.
+l.64 \usepackage
+                {extsizes} % ^^d0^^92^^d0^^be^^d0^^b7^^d0^^bc^^d0^^be^^d0^^b...
+
+? 
+! Undefined control sequence.
+l.65 \usepackage
+                {geometry} % ^^d0^^9f^^d1^^80^^d0^^be^^d1^^81^^d1^^82^^d0^^b...
+
+? 
+! Undefined control sequence.
+l.66 ^^I\geometry
+                 {top=25mm}
+? 
+! Undefined control sequence.
+l.67 ^^I\geometry
+                 {bottom=35mm}
+? 
+! Undefined control sequence.
+l.68 ^^I\geometry
+                 {left=35mm}
+? 
+! Undefined control sequence.
+l.69 ^^I\geometry
+                 {right=20mm}
+? 
+! Undefined control sequence.
+l.89 \usepackage
+                {hyperref}
+? 
+! Undefined control sequence.
+l.90 \usepackage
+                [usenames,dvipsnames,svgnames,table,rgb]{xcolor}
+? 
+! Undefined control sequence.
+l.91 \hypersetup
+                {^^I^^I^^I^^I% ^^d0^^93^^d0^^b8^^d0^^bf^^d0^^b5^^d1^^80^^d1^...
+
+? 
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^97 in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^b0 in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^b3 in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^be in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^bb in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^be in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^b2 in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^be in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^ba in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^90 in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^b2 in font cmr10!
+Missing character: There is no ^^d1 in font cmr10!
+Missing character: There is no ^^82 in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^be in font cmr10!
+Missing character: There is no ^^d1 in font cmr10!
+Missing character: There is no ^^80 in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^a2 in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^b5 in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^bc in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^b0 in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^a1 in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^be in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^b7 in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^b4 in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^b0 in font cmr10!
+Missing character: There is no ^^d1 in font cmr10!
+Missing character: There is no ^^82 in font cmr10!
+Missing character: There is no ^^d0 in font cmr10!
+Missing character: There is no ^^b5 in font c

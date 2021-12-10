@@ -81,13 +81,16 @@ enum DifferentiatorStatus
     
 };
 
-int CopyNodes(Node_t *node, Node_t **copy, Node_t *parent,                      MemoryDefender *def);
-int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable, MemoryDefender *def);
-int Simplify(Tree_t *tree, MemoryDefender *def);
+int IsConstant(char op);
+int IsConst   (Node_t *node, const char variable);
+int CopyNodes (Node_t *node, Node_t **copy, Node_t *parent,                      MemoryDefender *def);
+int DiffNodes (Node_t *node, Node_t **diff, Node_t *parent, const char variable, MemoryDefender *def);
+int Simplify  (Tree_t *tree, MemoryDefender *def);
 
 int Differentiate(Tree_t *tree, Tree_t **tree_res,         const char variable, MemoryDefender *def);
 
 int IsZeroNum (double x);
+
 
 Node_t  *GetE(char **, MemoryDefender *);
 Node_t  *GetN(char **, MemoryDefender *);

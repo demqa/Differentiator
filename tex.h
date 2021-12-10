@@ -2,6 +2,8 @@
 
 #define TEX_H
 
+// #include <assert.h>
+
 #include "differentiator.h"
 
 enum Priority
@@ -22,7 +24,7 @@ const int PHRASE_MAX_LEN = 100;
 const char Phrases[][PHRASE_MAX_LEN] = 
 {
     "А пошли они на хутор, бабочек ловить.",
-    "Пошёл ты нахуй, мусор, Я drum&bass продюсер",
+    "Пошёл ты нахуй, мусор, Я drum n' bass продюсер",
     "Эники-беники, ели вареники...",
     "Как же хочется простого человеческого...",
     "А ведь папа говорил, что нужно учиться...",
@@ -38,6 +40,8 @@ const char Phrases[][PHRASE_MAX_LEN] =
 
 int PrintOper(int oper);
 
+int OpenFormula();
+int ClosFormula();
 
 int TexInit();
 int TexDestroy();
@@ -46,6 +50,9 @@ int TexPrint(const char *);
 
 int TexOut (Node_t *node, int prior, int diff);
 int TexDump(Tree_t *tree);
+
+int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable, MemoryDefender *def);
+
 // int TexStory (Tree_t *tree, MemoryDefender *def);
 
 #endif // TEX_H

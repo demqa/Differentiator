@@ -1,0 +1,14 @@
+This is TeX, Version 3.14159265 (TeX Live 2017/Debian) (preloaded format=tex 2021.12.9)  10 DEC 2021 04:54
+**out.tex
+(./out.tex
+! I can't find file `{header.tex}'.
+l.1 \input{header.tex}
+                      
+(Press Enter to retry, or Control-D to exit)
+Please type another input file name: 
+! Emergency stop.
+l.1 \input{header.tex}
+                      
+End of file on the terminal!
+
+No pages of output.
