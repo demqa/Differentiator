@@ -2,10 +2,9 @@
 #include "tex.h"
 #include "debug_lib.h"
 
-int Filesize  (FILE *stream, size_t *filesize)
+int Filesize  (FILE *stream, size_t *filesize)  
 {
-    if (stream == nullptr)
-        return -1;
+    if (stream == nullptr) return STREAM_IS_NULL;
 
     struct stat buff = {};
         
@@ -13,54 +12,59 @@ int Filesize  (FILE *stream, size_t *filesize)
     
     *filesize = buff.st_size;
 
-    return 0;
+    return FUNC_IS_OK;
 }
 
 int ReadBuffer(char **buffer, FILE *stream)
 {
-    if (stream == nullptr)
-        return -1;
+    if ( stream == nullptr) return STREAM_IS_NULL;
+    if ( buffer == nullptr) return BUFFER_IS_NULL;
+    if (*buffer != nullptr) return PTR_IS_NOT_NULL;
 
     size_t filesize = 0;
-    if (Filesize(stream, &filesize))
+
+    int status = Filesize(stream, &filesize);
+    if (status)
     {
         fclose(stream);
-        return -2;
+        return status;
     }
 
     *buffer = (char *) calloc(filesize + 1, sizeof(char));
     if (buffer == nullptr)
     {
         fclose(stream);
-        return -3;
+        return BAD_ALLOC;
     }
 
     size_t count = fread(*buffer, sizeof(char), filesize, stream);
     if (count != filesize)
     {
         fclose(stream);
-        return -4;
+        return READ_WAS_UNSUCCESSFUL;
     }
 
     (*buffer)[filesize] = '\0';
 
     fclose(stream);
 
-    return 0;
+    return FUNC_IS_OK;
 }
 
 int SyntaxError(char **ptr)
 {
-    if (ptr == nullptr || *ptr == nullptr) return 1;
+    if (ptr == nullptr || *ptr == nullptr) return PTR_IS_NULL;
 
     fprintf(stderr, "INVALID_INPUT_FORMAT\n");
     fprintf(stderr, "EXPECTED NUMBER, INPUT: %c\n", **ptr);
 
-    return 0;
+    return FUNC_IS_OK;
 }
 
 int Require    (char **ptr, const char c)
 {
+    if (ptr == nullptr || *ptr == nullptr) return PTR_IS_NULL;
+
     if (**ptr != c)
     {
         fprintf(stderr, "INVALID_INPUT_FORMAT\n");
@@ -83,23 +87,24 @@ int StrEqual(const char *l, const char *r)
     return 1;
 }
 
-int IsConstant(char op)
+int IsMathConst(char op)
 {
     if (op == EXP || op == PI)
         return op;
 
-    return 0;
+    return FUNC_IS_OK;
 }
 
 int ReadFunc(char **ptr, int *n)
 {
-    if (ptr == nullptr || *ptr == nullptr) return 0;
-
-    if (n == nullptr)                      return 0;
+    if (ptr == nullptr || *ptr == nullptr) return PTR_IS_NULL;
+    if (n   == nullptr)                    return PTR_IS_NULL;
     
-    int check = 0;
+    int status = FUNC_IS_OK;
 
-    char *str = *ptr;
+    int check  = 0;
+
+    char *str  = *ptr;
 
     if (StrEqual(*ptr, "pi"))
     {
@@ -151,15 +156,15 @@ int ReadFunc(char **ptr, int *n)
     else
     {
         *n = 0;
+        status = OPER_NOT_FOUND;
     }
 
-    return 0;
+    return status;
 }
 
 int ReadVar (char **ptr, char *c)
 {
     if (ptr == nullptr || *ptr == nullptr) return 0;
-
     if (c == nullptr)                      return 0;
 
     if ('a' <= **ptr && **ptr <= 'z')
@@ -174,7 +179,6 @@ int ReadVar (char **ptr, char *c)
 int ReadNum (char **ptr, double *num)
 {
     if (ptr == nullptr || *ptr == nullptr) return 0;
-
     if (num == nullptr)                    return 0;
 
     int check = 0;
@@ -188,34 +192,22 @@ int ReadNum (char **ptr, double *num)
     return 1;
 }
 
-Node_t  *GetE(char **, MemoryDefender *);
-Node_t  *GetN(char **, MemoryDefender *);
-Node_t  *GetW(char **, MemoryDefender *);
-Node_t  *GetT(char **, MemoryDefender *);
-Node_t  *GetP(char **, MemoryDefender *);
-Node_t  *GetF(char **, MemoryDefender *);
-Node_t  *GetG(char **, MemoryDefender *);
-
 Node_t *GetG(char **ptr, MemoryDefender *def)
 {
     if (ptr == nullptr || *ptr == nullptr) return nullptr;
-
     if (def == nullptr)                    return nullptr;
 
     Node_t *val = GetE(ptr, def);
     assert(val != nullptr);
 
-    if (Require(ptr, '$'))
-        return nullptr;
+    if (Require(ptr, '$'))                 return nullptr;
 
     return val;
 }
 
 Node_t *GetW(char **ptr, MemoryDefender *def)
 {
-    
     if (ptr == nullptr || *ptr == nullptr) return nullptr;
-
     if (def == nullptr)                    return nullptr;
 
     Node_t *val = GetP(ptr, def);
@@ -243,7 +235,6 @@ Node_t *GetW(char **ptr, MemoryDefender *def)
 Node_t *GetT(char **ptr, MemoryDefender *def)
 {
     if (ptr == nullptr || *ptr == nullptr) return nullptr;
-
     if (def == nullptr)                    return nullptr;
 
     Node_t *val = GetW(ptr, def);
@@ -273,7 +264,6 @@ Node_t *GetT(char **ptr, MemoryDefender *def)
 Node_t *GetE(char **ptr, MemoryDefender *def)
 {
     if (ptr == nullptr || *ptr == nullptr) return nullptr;
-
     if (def == nullptr)                    return nullptr;
 
     Node_t *val = GetT(ptr, def);
@@ -303,9 +293,7 @@ Node_t *GetE(char **ptr, MemoryDefender *def)
 Node_t *GetN(char **ptr, MemoryDefender *def)
 {
     if (ptr == nullptr || *ptr == nullptr) return nullptr;
-
     if (def == nullptr)                    return nullptr;
-
 
     double num = NAN;
     
@@ -325,7 +313,6 @@ Node_t *GetN(char **ptr, MemoryDefender *def)
 Node_t *GetP(char **ptr, MemoryDefender *def)
 {
     if (ptr == nullptr || *ptr == nullptr) return nullptr;
-
     if (def == nullptr)                    return nullptr;
 
     int multiplier = 1;
@@ -372,7 +359,6 @@ Node_t *GetP(char **ptr, MemoryDefender *def)
 Node_t *GetV(char **ptr, MemoryDefender *def)
 {
     if (ptr == nullptr || *ptr == nullptr) return nullptr;
-
     if (def == nullptr)                    return nullptr;
 
     char var = 0;
@@ -394,18 +380,17 @@ Node_t *GetV(char **ptr, MemoryDefender *def)
 Node_t *GetF(char **ptr, MemoryDefender *def)
 {
     if (ptr == nullptr || *ptr == nullptr) return nullptr;
-
     if (def == nullptr)                    return nullptr;
 
     int oper = 0;
 
     ReadFunc(ptr, &oper);
 
-    if (IsConstant(oper))
+    if (IsMathConst(oper))
     {
         NEW_NODE(node);
         NEW_ARG (node, arg);
-        OPER_ARG(arg, IsConstant(oper));
+        OPER_ARG(arg, IsMathConst(oper));
 
         return node;
     }
@@ -430,11 +415,8 @@ Node_t *GetF(char **ptr, MemoryDefender *def)
 int TreeReadProcessing(Tree_t *tree, char **ptr,                     MemoryDefender *def)
 {
     if (tree == nullptr)                   return TREE_IS_NULL;
-
     if (TreeVerify(tree))                  return TreeDump(tree);
-
     if (ptr == nullptr || *ptr == nullptr) return PTR_IS_NULL;
-
     if (def == nullptr)                    return DEF_IS_NULL;
 
     tree->root = GetG(ptr, def);
@@ -447,12 +429,9 @@ int TreeReadProcessing(Tree_t *tree, char **ptr,                     MemoryDefen
 
 int TreeRead          (Tree_t *tree, char *buffer, size_t buff_size, MemoryDefender *def)
 {
-    if (tree == nullptr)   return TREE_IS_NULL;
-
+    if (tree   == nullptr) return TREE_IS_NULL;
     if (TreeVerify(tree))  return TreeDump(tree);
-
     if (buffer == nullptr) return BUFFER_IS_NULL;
-
     if (buff_size == 0)    return FILESIZE_IS_ZERO;
 
     char *ptr     = buffer;
@@ -477,35 +456,30 @@ int TreeRead          (Tree_t *tree, char *buffer, size_t buff_size, MemoryDefen
 
     ptr = buffer;
     int status = TreeReadProcessing(tree, &ptr, def);
-    if (status)
-        return status;
+    if (status) return status;
     
     return FUNC_IS_OK;
 }
 
 int TreeFill          (Tree_t *tree, FILE *stream, char **buff,      MemoryDefender *def)
 {
-    if (tree == nullptr)   return TREE_IS_NULL;
-
-    if (stream == nullptr) return STREAM_IS_NULL;
-
-    if (buff == nullptr || *buff != nullptr) return PTR_IS_NULL;
+    if (tree   == nullptr)                     return TREE_IS_NULL;
+    if (stream == nullptr)                     return STREAM_IS_NULL;
+    if (buff   == nullptr || *buff != nullptr) return PTR_IS_NULL;
     
     size_t buff_size = 0;
-    if (Filesize(stream, &buff_size)) return FILESIZE_IS_ZERO;
-
-    char *buffer = nullptr;
-
-    if (ReadBuffer(&buffer, stream))  return BUFFER_CANT_BE_READ;
+    if (Filesize(stream, &buff_size))          return FILESIZE_IS_ZERO;
+         
+    char *buffer = nullptr;         
+         
+    if (ReadBuffer(&buffer, stream))           return BUFFER_CANT_BE_READ;
 
     *buff = buffer;
 
     DefenderPush(def, buffer);
     
     int status = TreeRead(tree, buffer, buff_size, def);
-
-    if (status)
-        return status;
+    if (status) return status;
 
     return FUNC_IS_OK;
 }
@@ -513,12 +487,8 @@ int TreeFill          (Tree_t *tree, FILE *stream, char **buff,      MemoryDefen
 
 int IsConst    (Node_t *node, const char variable) /*Is Subtree Const*/
 {
-    if (node == nullptr) return 0;
-
-    if (node->value == nullptr)
-    {
-        return NODE_VALUE_IS_NULL;
-    }
+    if (node        == nullptr) return 0;
+    if (node->value == nullptr) return NODE_VALUE_IS_NULL;
 
     RT *arg = node->value;
 
@@ -552,17 +522,14 @@ int IsConst    (Node_t *node, const char variable) /*Is Subtree Const*/
         }
     }
 
+    assert(false);
     return UNBELIEVABLE_CASE;
 }
 
 int ClearStatus(Node_t *node)
 {
-    if (node == nullptr) return 0;
-
-    if (node->value == nullptr)
-    {
-        return NODE_VALUE_IS_NULL;
-    }
+    if (node == nullptr)        return 0;
+    if (node->value == nullptr) return NODE_VALUE_IS_NULL;
 
     node->value->subtree_status = 0;
 
@@ -591,24 +558,23 @@ int IsEqualNum(double x, double num)
 int CopyNodes(Node_t *node, Node_t **copy, Node_t *parent, MemoryDefender *def)
 {
     if (node == nullptr)                     return NODE_PTR_IS_NULL;
-
     if (copy == nullptr || *copy != nullptr) return PTR_IS_NULL;
 
     // i have to save these ptr's or 
     // do some func that will free
     // this memory when it won't be used no more
     Node_t *new_node = (Node_t *) calloc(1, sizeof(Node_t));
-    if (new_node == nullptr) return BAD_ALLOC;
+    if (new_node == nullptr)                 return BAD_ALLOC;
 
     new_node->parent = parent;
 
     RT *arg = (RT *) calloc(1, sizeof(RT));
-    if (arg == nullptr)      return BAD_ALLOC;
+    if (arg == nullptr)                      return BAD_ALLOC;
 
     DefenderPush(def, (char *)arg);
 
     RT *check = (RT *) memcpy(arg, node->value, sizeof(RT));
-    if (check != arg)        return MEMCPY_CRASH;
+    if (check != arg)                        return MEMCPY_CRASH;
 
     new_node->value = arg;
 
@@ -626,15 +592,12 @@ int CopyNodes(Node_t *node, Node_t **copy, Node_t *parent, MemoryDefender *def)
 
 int Differentiate(Tree_t *tree, Tree_t **tree_res, const char variable, MemoryDefender *def)
 {
-    if (tree == nullptr)  return TREE_IS_NULL;
-
-    if (TreeVerify(tree)) return TreeDump(tree);
-
-    if (tree_res == nullptr || *tree_res != nullptr)
-        return PTR_IS_NULL;
+    if (tree == nullptr)                             return TREE_IS_NULL;
+    if (TreeVerify(tree))                            return TreeDump(tree);
+    if (tree_res == nullptr || *tree_res != nullptr) return PTR_IS_NULL;
 
     Tree_t *new_tree = (Tree_t *) calloc(1, sizeof(Tree_t));
-    if (new_tree == nullptr) return BAD_ALLOC;
+    if (new_tree == nullptr)                         return BAD_ALLOC;
 
     DefenderPush(def, (char *)new_tree);
 
@@ -642,7 +605,9 @@ int Differentiate(Tree_t *tree, Tree_t **tree_res, const char variable, MemoryDe
 
     int status = FUNC_IS_OK;
 
+    // TODO
     // tree->size doesnt work now
+
     status |= DiffNodes  (tree->root, &new_tree->root, nullptr, variable, def);
 
     status |= ClearStatus(tree->root);
@@ -655,7 +620,45 @@ int Differentiate(Tree_t *tree, Tree_t **tree_res, const char variable, MemoryDe
 }
 
 
-double Eval(const char SIGN, double x, double y)
+int AssignValue(RT *arg, Node_t *left, Node_t *right, int num, int *flag)
+{
+    if (arg  == nullptr) return NODE_VALUE_IS_NULL;
+
+    arg->type = NUM_TYPE;
+    arg->num  = num;
+
+    NodesDtor(left);
+    NodesDtor(right);
+
+    *flag = YE_CHANGES;
+
+    return 0;
+}
+
+int Reconnect  (Node_t *save, Node_t *kill, Node_t** node, int *flag, MemoryDefender *def)
+{
+    if (save == nullptr ||  kill == nullptr ||
+        node == nullptr || *node == nullptr ||
+        flag == nullptr ||   def == nullptr) return PTR_IS_NULL;
+
+    save->parent = (*node)->parent;
+    if (save->parent)
+    {
+        if ((*node)->parent->left  == *node) (*node)->parent->left  = save;
+        if ((*node)->parent->right == *node) (*node)->parent->right = save;
+    }
+
+    DefenderPush(def, (char *) *node);
+
+    NodesDtor(kill);
+
+    *flag = YE_CHANGES;
+    *node = save;
+
+    return 0;
+}
+
+double Eval    (const char SIGN, double x, double y)
 {
     switch (SIGN)
     {
@@ -673,29 +676,40 @@ double Eval(const char SIGN, double x, double y)
         default:
             return NAN;
     }
+
+    return NAN;
 }
 
 int SimplifyNodesNum (Node_t  *node,  int *flag)
 {
-    if (node == nullptr)        return NODE_PTR_IS_NULL;
-           
+    // PRINT_LINE;
+
+    if (node == nullptr)        return NODE_PTR_IS_NULL; 
     if (flag == nullptr)        return FLAG_IS_NULL;
- 
     if (node->value == nullptr) return NODE_VALUE_IS_NULL;
     
+    // PRINT_LINE;
+
     int status = FUNC_IS_OK;
 
     RT *arg = node->value;
 
-    if (arg->type == OPER_TYPE &&
+    if (arg->type == OPER_TYPE           &&
         LEFT  && LEFT->TYPE  == NUM_TYPE &&
         RIGHT && RIGHT->TYPE == NUM_TYPE)
     {
         ASSIGN_VALUE(Eval(OP, LEFT->NUM, RIGHT->NUM));
     }
 
+    // if (status) PRINT_D(status);
+
+    // PRINT_PTR(LEFT); // PRINT_PTR(RIGHT);
     if (LEFT)  status |= SimplifyNodesNum(LEFT,  flag);
+    // if (status) PRINT_D(status);
+
+    // PRINT_PTR(LEFT); PRINT_PTR(RIGHT);
     if (RIGHT) status |= SimplifyNodesNum(RIGHT, flag);
+    // if (status) PRINT_D(status);
 
     return status;
 }
@@ -703,7 +717,6 @@ int SimplifyNodesNum (Node_t  *node,  int *flag)
 int SimplifyNodesUniq(Node_t **node_, int *flag, MemoryDefender *def)
 {
     if (node_ == nullptr || node_ == nullptr) return NODE_PTR_IS_NULL;
-       
     if (flag == nullptr)                      return FLAG_IS_NULL;
 
     Node_t *node = *node_;
@@ -859,35 +872,35 @@ int SimplifyNodesUniq(Node_t **node_, int *flag, MemoryDefender *def)
 int SimplifyNodes    (Node_t **node,  int *flag, MemoryDefender *def)
 {
     if (node == nullptr || *node == nullptr) return NODE_PTR_IS_NULL;
-       
     if (flag == nullptr)                     return FLAG_IS_NULL;
-
     if ((*node)->value == nullptr)           return NODE_VALUE_IS_NULL;
  
     int status = FUNC_IS_OK;
 
     status |= SimplifyNodesNum(*node, flag);
+    // if (status) PRINT_D(status);
     if (status) return status;
 
     status |= SimplifyNodesUniq(node, flag, def);
+    // if (status) PRINT_D(status);
     if (status) return status;
 
     return status;
 }
 
-int Simplify(Tree_t *tree, MemoryDefender *def)
+int Simplify         (Tree_t *tree, MemoryDefender *def)
 {
     if (tree == nullptr)  return TREE_IS_NULL;
-
     if (TreeVerify(tree)) return TreeDump(tree);
 
     int status = FUNC_IS_OK;
-    
-    int flag = NO_CHANGES;
+
+    int flag   = NO_CHANGES;
 
     do
     {
         flag = NO_CHANGES;
+
         status |= SimplifyNodes(&tree->root, &flag, def);
         if (status) return status;
     }
@@ -922,12 +935,10 @@ int main()
 
     Tree_t *differentiated_tree = nullptr;
 
-
     // i haven't got any idea about diff_tree->size ))))))
 
     // status |= TreeDump(differentiated_tree);
     // if (status) PRINT_D(status);
-
 
     TexInit();
 
@@ -944,16 +955,14 @@ int main()
 
     status |= TexOut(differentiated_tree->root, 1, 0);
     if (status) PRINT_D(status);
+
     ClosFormula();
 
     TexDestroy();
-    // I WANT TO DIE, NOT TO DO THIS SHIT
-    // status |= TexStory(&tree, &def);
-    // if (status) PRINT_D(status);
 
     TreeDtor(&tree);
 
-    // TreeDtor(differentiated_tree);
+    TreeDtor(differentiated_tree);
 
     DefenderClear(&def);
 

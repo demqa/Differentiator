@@ -3,6 +3,15 @@
 
 static FILE *tex_out = nullptr;
 
+static int PRINT_CONST[3] = {};
+
+enum PrintConst
+{
+    NUM_IND   = 0,
+    VAR_IND_1 = 1,
+    VAR_IND_2 = 2,
+};
+
 int TexVerify()
 {
     if (tex_out == nullptr)
@@ -42,7 +51,7 @@ int TexPrint(const char *str)
 
     if (TexVerify())    return -1;
 
-    fprintf(tex_out, "\\text{%s}\n", str);
+    fprintf(tex_out, "%s\n", str);
 
     return 0;
 }
@@ -58,6 +67,8 @@ int TexDestroy()
 
     fclose(tex_out);
     tex_out = nullptr;
+
+    system("pdflatex out.tex > /dev/null");
 
     return 0;
 }
@@ -272,8 +283,8 @@ int Phrase()
     if (TexVerify() || Phrases == nullptr)
         return -1;
 
-    fprintf(tex_out, "\n\n\\text{%s}\n", Phrases[NumPhrase()]);
-    fputs("\n\n", tex_out);
+    fprintf(tex_out, "\n\n%s\n", Phrases[NumPhrase()]);
+    fputs  ("\n\n", tex_out);
 
     return 0;
 }
@@ -296,30 +307,34 @@ int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable, 
 
     ARG_ASSIGN(new_node, new_arg);
 
-    Phrase();
-
-    OpenFormula();
-    status |= TexOut(node, 1, 1);
-
-    PrintOper(EQ);
-
-    if (rand() < 5000)
-    {
+    // if (arg->type ==  NUM_TYPE &&  PRINT_CONST[NUM_IND]   || 
+    //     arg->type ==  VAR_TYPE && (PRINT_CONST[VAR_IND_1] || PRINT_CONST[VAR_IND_2]))
+    // {
         Phrase();
-        status |= TexOut(node, 1, 0);
-        return status;
-    }
+
+        OpenFormula();
+        status |= TexOut(node, 1, 1);
+        
+        PrintOper(EQ);
+    // }
+
+    // if (rand() < 5000)
+    // {
+    //     Phrase();
+    //     status |= TexOut(node, 1, 0);
+    //     return status;
+    // }
 
     *diff = new_node;
     Tree_t tr = {};
 
     if (arg->type == OPER_TYPE)
     {
-        assert(NodeIsTerminal(node) != NODE_IS_TERMINAL || IsConstant(OP));
+        assert(NodeIsTerminal(node) != NODE_IS_TERMINAL || IsMathConst(OP));
 
         assert(arg->num == 0 && arg->var == 0);
 
-        if (IsConstant(OP))
+        if (IsMathConst(OP))
         {
             PrintNum(0);
             ClosFormula();
@@ -727,8 +742,11 @@ int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable, 
 
         assert(arg->oper == 0 && arg->var == 0);
 
-        PrintNum   (0);
-        ClosFormula();
+        // if (PRINT_CONST[0]++ == 0)
+        // {
+            PrintNum   (0);
+            ClosFormula();
+        // }
 
         ZERO_INIT(new_arg);
     }
@@ -741,15 +759,21 @@ int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable, 
 
         if (arg->var == variable)
         {
-            PrintNum(1);
-            ClosFormula();
+            // if (PRINT_CONST[1]++ == 0)
+            // {
+                PrintNum(1);
+                ClosFormula();
+            // }
 
             ONE__INIT(new_arg);
         }
         else
         {
-            PrintNum(0);
-            ClosFormula();
+            // if (PRINT_CONST[2]++ == 0)
+            // {
+                PrintNum(0);
+                ClosFormula();
+            // }
 
             ZERO_INIT(new_arg);
         }
@@ -759,8 +783,3 @@ int DiffNodes(Node_t *node, Node_t **diff, Node_t *parent, const char variable, 
 
     return status;
 }
-
-//     // fputs("\\text{Предельно понятно, что это примерно}\n", tex_out);
-
-//     // fputs("\\text{Это конечно всё очень хорошо, но давайте по-порядку...}\n"
-//     //       "\\text{Для начала:}\n", tex_out);

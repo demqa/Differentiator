@@ -40,7 +40,6 @@
     CHI->parent = PAR;
 
 
-
 #define OPER_INIT(ARG, OPER_)                   \
 do                                               \
 {                                                 \
@@ -98,38 +97,24 @@ while (0)
 #define COPY(FROM, DEST, SIDE)                              \
     status |= CopyNodes(FROM, &(new_ ## DEST)->SIDE, new_ ## DEST, def);
 
-#define RECONNECT(SAVE, KILL)    \
-do                                \
-{                                  \
-    SAVE->parent = node->parent;    \
-    if (node->parent)                \
-    {                                 \
-        if (node->parent->left  == node) node->parent->left  = SAVE; \
-        if (node->parent->right == node) node->parent->right = SAVE;  \
-    }                                    \
-    DefenderPush(def, (char *)node);      \
-                                           \
-    NodesDtor(KILL);                        \
-                                             \
-    *flag  = YE_CHANGES;                      \
-    *node_ = SAVE;                             \
-}                                               \
-while (0)
+#define RECONNECT(SAVE, KILL)                                  \
+    status |= Reconnect(SAVE, KILL, node_, flag, def);
 
-#define ASSIGN_VALUE(NUMBER)                       \
-do                                                  \
-{                                                    \
-    arg->type = NUM_TYPE;                             \
-    arg->num  = NUMBER;                                \
-                                                        \
-    NodesDtor(LEFT);                                     \
-    NodesDtor(RIGHT);                                     \
-                                                           \
-    LEFT  = nullptr;                                        \
-    RIGHT = nullptr;                                         \
-                                                              \
-    *flag = YE_CHANGES;                                        \
-}                                                               \
-while (0)
+#define ASSIGN_VALUE(NUMBER)                                      \
+    status |= AssignValue(arg, LEFT, RIGHT, NUMBER, flag);        
+
+// do                                                      
+// {                                                    
+//     arg->type = NUM_TYPE;                             
+//     arg->num  = NUMBER;                               
+//                                                         
+//     NodesDtor(LEFT);                                     
+//     NodesDtor(RIGHT);                                     
+//                                                            
+//     LEFT  = nullptr;                                        
+//     RIGHT = nullptr;                                         
+//                                                               
+//     *flag = YE_CHANGES;                                        
+// }                                                               
 
 #endif // DIFF_DSL_H

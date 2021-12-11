@@ -2,24 +2,32 @@
 
 int DefenderCtor  (MemoryDefender *defender)
 {
-    if (defender == nullptr)         return -1;
+    if (defender == nullptr)         return Defender::PTR_IS_NULL;
 
-    defender->allocs   = (char **) calloc(MAX_ALLOCS, sizeof(char *));
+    defender->allocs     = (char **) calloc(Defender::MAX_ALLOCS, sizeof(char *));
+    if (defender->allocs == nullptr)
+    {
+        defender->status = Defender::BAD_ALLOC;
+        return defender->status;
+    }
 
     defender->size     = 0;
-    defender->capacity = MAX_ALLOCS;
+    defender->capacity = Defender::MAX_ALLOCS;
 
     return 0;
 }
 
 int DefenderPush  (MemoryDefender *defender, char *memory)
 {
-    if (defender == nullptr)         return -1;
+    if (defender == nullptr)         return Defender::PTR_IS_NULL;
            
-    if (memory   == nullptr)         return -2;
+    if (memory   == nullptr)         return Defender::CANT_PUSH_NULL;
 
     if (defender->size + 1 >= defender->capacity)
-        return -3;
+    {
+        defender->status = Defender::ARRAY_IS_FULL;
+        return defender->status;
+    }
     
     defender->allocs[defender->size++] = memory;
 
@@ -28,7 +36,7 @@ int DefenderPush  (MemoryDefender *defender, char *memory)
 
 int DefenderDtor  (MemoryDefender *defender)
 {
-    if (defender == nullptr)         return -1;
+    if (defender == nullptr)         return Defender::PTR_IS_NULL;
 
     defender->size     = 0;
     defender->capacity = 0;
@@ -39,15 +47,16 @@ int DefenderDtor  (MemoryDefender *defender)
 
 int DefenderClear (MemoryDefender *defender)
 {
-    if (defender == nullptr)         return -1;
+    if (defender         == nullptr) return Defender::PTR_IS_NULL;
 
-    if (defender->allocs == nullptr) return -2;
+    if (defender->allocs == nullptr) return Defender::ALLOCS_NULL;
 
     for (size_t iter = 0; iter < defender->size; iter++)
     {
         free(defender->allocs[iter]);
         defender->allocs[iter] = nullptr;
     }
+
     defender->size = 0;
 
     return 0;
@@ -55,7 +64,7 @@ int DefenderClear (MemoryDefender *defender)
 
 int DefenderIsFull(MemoryDefender *defender)
 {
-    if (defender == nullptr)         return -1;
+    if (defender == nullptr)         return Defender::PTR_IS_NULL;
 
-    return (defender->size + 1 >= defender->capacity) ? 1 : 0;
+    return (defender->size + 1 >= defender->capacity) ? Defender::ARRAY_IS_FULL : 0;
 }
