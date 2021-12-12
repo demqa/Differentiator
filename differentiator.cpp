@@ -613,7 +613,7 @@ int Differentiate(Tree_t *tree, Tree_t **tree_res, const char variable, MemoryDe
     status |= ClearStatus(tree->root);
 
     status |= Simplify   (new_tree, def);
-    
+
     *tree_res = new_tree;
 
     return status;
@@ -635,25 +635,27 @@ int AssignValue(RT *arg, Node_t *left, Node_t *right, int num, int *flag)
     return 0;
 }
 
-int Reconnect  (Node_t *save, Node_t *kill, Node_t** node, int *flag, MemoryDefender *def)
+int Reconnect  (Node_t *save, Node_t *kill, Node_t** node_, int *flag, MemoryDefender *def)
 {
-    if (save == nullptr ||  kill == nullptr ||
-        node == nullptr || *node == nullptr ||
-        flag == nullptr ||   def == nullptr) return PTR_IS_NULL;
+    if (save  == nullptr ||  kill  == nullptr ||
+        node_ == nullptr || *node_ == nullptr ||
+        flag  == nullptr ||   def  == nullptr) return PTR_IS_NULL;
 
-    save->parent = (*node)->parent;
+    Node_t *node = *node_;
+
+    save->parent = node->parent;
     if (save->parent)
     {
-        if ((*node)->parent->left  == *node) (*node)->parent->left  = save;
-        if ((*node)->parent->right == *node) (*node)->parent->right = save;
+        if (node->parent->left  == node) node->parent->left  = save;
+        if (node->parent->right == node) node->parent->right = save;
     }
 
-    DefenderPush(def, (char *) *node);
+    DefenderPush(def, (char *) node);
 
     NodesDtor(kill);
 
-    *flag = YE_CHANGES;
-    *node = save;
+    *flag  = YE_CHANGES;
+    *node_ = save;
 
     return 0;
 }
@@ -682,34 +684,32 @@ double Eval    (const char SIGN, double x, double y)
 
 int SimplifyNodesNum (Node_t  *node,  int *flag)
 {
-    // PRINT_LINE;
-
-    if (node == nullptr)        return NODE_PTR_IS_NULL; 
-    if (flag == nullptr)        return FLAG_IS_NULL;
+    if (node        == nullptr) return NODE_PTR_IS_NULL; 
+    if (flag        == nullptr) return FLAG_IS_NULL;
     if (node->value == nullptr) return NODE_VALUE_IS_NULL;
-    
-    // PRINT_LINE;
-
     int status = FUNC_IS_OK;
 
     RT *arg = node->value;
 
-    if (arg->type == OPER_TYPE           &&
-        LEFT  && LEFT->TYPE  == NUM_TYPE &&
+    if (arg->type            == OPER_TYPE &&
+        LEFT  && LEFT->TYPE  == NUM_TYPE  &&
         RIGHT && RIGHT->TYPE == NUM_TYPE)
     {
         ASSIGN_VALUE(Eval(OP, LEFT->NUM, RIGHT->NUM));
+        if (status) PRINT_D(status);
+        return status;
     }
 
     // if (status) PRINT_D(status);
 
+    if (status) PRINT_D(status);
     // PRINT_PTR(LEFT); // PRINT_PTR(RIGHT);
-    if (LEFT)  status |= SimplifyNodesNum(LEFT,  flag);
-    // if (status) PRINT_D(status);
+    if (LEFT)   status |= SimplifyNodesNum(LEFT,  flag);
+    if (status) PRINT_D(status);
 
     // PRINT_PTR(LEFT); PRINT_PTR(RIGHT);
-    if (RIGHT) status |= SimplifyNodesNum(RIGHT, flag);
-    // if (status) PRINT_D(status);
+    if (RIGHT)  status |= SimplifyNodesNum(RIGHT, flag);
+    if (status) PRINT_D(status);
 
     return status;
 }
@@ -717,7 +717,8 @@ int SimplifyNodesNum (Node_t  *node,  int *flag)
 int SimplifyNodesUniq(Node_t **node_, int *flag, MemoryDefender *def)
 {
     if (node_ == nullptr || node_ == nullptr) return NODE_PTR_IS_NULL;
-    if (flag == nullptr)                      return FLAG_IS_NULL;
+    if (flag  == nullptr)                     return FLAG_IS_NULL;
+    if (def   == nullptr)                     return DEF_IS_NULL;
 
     Node_t *node = *node_;
 
@@ -877,13 +878,14 @@ int SimplifyNodes    (Node_t **node,  int *flag, MemoryDefender *def)
  
     int status = FUNC_IS_OK;
 
+    PRINT_D(status);
     status |= SimplifyNodesNum(*node, flag);
-    // if (status) PRINT_D(status);
-    if (status) return status;
+    if (status) PRINT_D(status);
+    // if (status) return status;
 
     status |= SimplifyNodesUniq(node, flag, def);
-    // if (status) PRINT_D(status);
-    if (status) return status;
+    if (status) PRINT_D(status);
+    // if (status) return status;
 
     return status;
 }
@@ -937,8 +939,6 @@ int main()
 
     // i haven't got any idea about diff_tree->size ))))))
 
-    // status |= TreeDump(differentiated_tree);
-    // if (status) PRINT_D(status);
 
     TexInit();
 
@@ -959,6 +959,9 @@ int main()
     ClosFormula();
 
     TexDestroy();
+
+    status |= TreeDump(differentiated_tree);
+    if (status) PRINT_D(status);
 
     TreeDtor(&tree);
 

@@ -2,15 +2,18 @@
 
 #define DIFF_DSL_H
 
-#define OP   arg->oper
+#define OP    arg->oper
+ 
+#define TYPE  value->type
+ 
+#define NUM   value->num
+ 
+#define VAR   value->var
+ 
+#define OPER  value->oper
 
-#define TYPE value->type
-
-#define NUM  value->num
-
-#define VAR  value->var
-
-#define OPER value->oper
+#define LEFT  node->left 
+#define RIGHT node->right
 
 #define NEW_NODE(NAME)                                   \
     Node_t *NAME = (Node_t *) calloc(1, sizeof(Node_t));  \
@@ -22,18 +25,17 @@
     DefenderPush(def, (char *)NAME);                            \
     NODE->value = NAME;
     
-
 #define OPER_ARG(ARG, OPER_)  \
-    ARG->type = OPER_TYPE;     \
-    ARG->oper = OPER_;
+    ARG->type   = OPER_TYPE;   \
+    ARG->oper   = OPER_;
 
 #define NUM_ARG(ARG, NUM_)        \
-    ARG->type = NUM_TYPE;          \
-    ARG->num  = NUM_;
+    ARG->type   = NUM_TYPE;        \
+    ARG->num    = NUM_;
 
-#define VAR_ARG(ARG, VAR)             \
-    ARG->type = VAR_TYPE;              \
-    ARG->var  = VAR;
+#define VAR_ARG(ARG, VAR_)            \
+    ARG->type   = VAR_TYPE;            \
+    ARG->var    = VAR_;
 
 #define CONNECT(PAR, CHI, SIDE)           \
     PAR->SIDE   = CHI;                     \
@@ -74,9 +76,6 @@ while (0)
 #define ZERO_INIT(ARG) NUM__INIT(ARG, 0);
 #define ONE__INIT(ARG) NUM__INIT(ARG, 1);
 
-#define LEFT  node->left
-#define RIGHT node->right
-
 #define OP_NODE_INIT(OP_, AP, PAR, SIDE)   \
     NODE_INIT(new_ ## AP, new_ ## PAR);     \
     ARG__INIT(arg_ ## AP);                   \
@@ -97,11 +96,14 @@ while (0)
 #define COPY(FROM, DEST, SIDE)                              \
     status |= CopyNodes(FROM, &(new_ ## DEST)->SIDE, new_ ## DEST, def);
 
+
 #define RECONNECT(SAVE, KILL)                                  \
     status |= Reconnect(SAVE, KILL, node_, flag, def);
 
 #define ASSIGN_VALUE(NUMBER)                                      \
-    status |= AssignValue(arg, LEFT, RIGHT, NUMBER, flag);        
+    status |= AssignValue(arg, LEFT, RIGHT, NUMBER, flag);         \
+    LEFT  = nullptr;                                                \
+    RIGHT = nullptr;
 
 // do                                                      
 // {                                                    

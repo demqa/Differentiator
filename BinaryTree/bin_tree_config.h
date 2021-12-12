@@ -51,10 +51,10 @@ const Value_t DEAD_VAL = nullptr;
 const size_t COLOR_MAX_LEN = 10 + 1;
 const size_t SHAPE_MAX_LEN = 14 + 1;
 
-const char left_color    [COLOR_MAX_LEN] = "#7100c7";
-const char right_color   [COLOR_MAX_LEN] = "#7100c7";
+const char  left_color [COLOR_MAX_LEN] = "#7100c7";
+const char right_color [COLOR_MAX_LEN] = "#7100c7";
 
-const char colors[][COLOR_MAX_LEN] =
+const char colors[]    [COLOR_MAX_LEN] =
 {
     "#ff002f",
     "#f6fa00",
@@ -63,7 +63,7 @@ const char colors[][COLOR_MAX_LEN] =
     "#ff8b1f",
 };
 
-const char shapes[][SHAPE_MAX_LEN] = 
+const char shapes[]    [SHAPE_MAX_LEN] = 
 {
     "octagon",
     "hexagon",

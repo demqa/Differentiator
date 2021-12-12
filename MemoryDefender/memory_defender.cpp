@@ -25,6 +25,7 @@ int DefenderPush  (MemoryDefender *defender, char *memory)
 
     if (defender->size + 1 >= defender->capacity)
     {
+        fprintf(stderr, "memory is out\n");
         defender->status = Defender::ARRAY_IS_FULL;
         return defender->status;
     }

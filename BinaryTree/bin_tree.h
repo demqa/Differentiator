@@ -51,7 +51,7 @@ enum TreeStatus
 
 struct Node_t
 {
-    Value_t value;
+    Value_t  value;
 
     Node_t  *parent;
     Node_t  *left;
@@ -61,9 +61,9 @@ struct Node_t
 
 struct Tree_t
 {
-    Node_t *root;
+    Node_t    *root;
 
-    size_t size;
+    size_t     size;
     TreeStatus status;
 };
 
