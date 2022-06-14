@@ -475,7 +475,9 @@ TreeStatus TreeDump(Tree_t *tree)
     fclose(dump_file);
 
     system("dot dump -T png -o dump.png");
-    system("eog dump.png");
+    // Comment this line due to incompatibility
+    // system("eog dump.png");       // Ubuntu 18.04 LTS
+    system("gwenview dump.png");  // Manjaro KDE
 
     return (TreeStatus) status;
 }

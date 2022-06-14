@@ -35,14 +35,12 @@ int TexInit()
         return -1;
     }
 
-    
-
-
     fputs("\\input{header.tex}     \n", tex_out);
     fputs("\\usepackage{upgreek} \n\n", tex_out);
     
     fputs("\\begin{document}     \n\n", tex_out);
 
+    return 0;
 }
 
 int TexPrint(const char *str)
@@ -120,34 +118,43 @@ int PrintFunc(Node_t *node, int oper)
 int OpenFormula()
 {
     if (tex_out) fprintf(tex_out, "\\begin{dmath}\n");
-    // if (tex_out) fprintf(tex_out, "\\[");
-    
+
+    return 0;
 }
 
 int ClosFormula()
 {
     if (tex_out) fprintf(tex_out, "\n\\end{dmath}\n");
-    // if (tex_out) fprintf(tex_out, "\\]\n");
+
+    return 0;
 }
 
 int OpenFig()
 {
     if (tex_out) fprintf(tex_out, "{");
+
+    return 0;
 }
 
 int ClosFig()
 {
     if (tex_out) fprintf(tex_out, "}");
+
+    return 0;
 }
 
 int OpenBr()
 {
     if (tex_out) fprintf(tex_out, "(");
+
+    return 0;
 }
 
 int ClosBr()
 {
     if (tex_out) fprintf(tex_out, ")");
+
+    return 0;
 }
 
 int PrintOper(int oper)

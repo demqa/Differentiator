@@ -878,7 +878,6 @@ int SimplifyNodes    (Node_t **node,  int *flag, MemoryDefender *def)
  
     int status = FUNC_IS_OK;
 
-    PRINT_D(status);
     status |= SimplifyNodesNum(*node, flag);
     if (status) PRINT_D(status);
     // if (status) return status;
@@ -935,10 +934,10 @@ int main()
     status |= TreeFill(&tree, stream, &buffer, &def);
     if (status) PRINT_D(status);
 
+    // status |= TreeDump(&tree);
+    // if (status) PRINT_D(status);
+
     Tree_t *differentiated_tree = nullptr;
-
-    // i haven't got any idea about diff_tree->size ))))))
-
 
     TexInit();
 
@@ -960,8 +959,8 @@ int main()
 
     TexDestroy();
 
-    status |= TreeDump(differentiated_tree);
-    if (status) PRINT_D(status);
+    // status |= TreeDump(differentiated_tree);
+    // if (status) PRINT_D(status);
 
     TreeDtor(&tree);
 
