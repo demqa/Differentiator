@@ -44,6 +44,8 @@ You may write your math expression in expr1 file using several rules:
 sinx^2+lnx+ln((x*y+x-y)^2)$
 ```
 
+## Make & Execute
+
 ```
 mkdir -p Obj && make
 ./diff
