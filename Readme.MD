@@ -11,14 +11,14 @@ that differentiator did to get this expression.
 
 ## Available Functions, Operators & Special Numbers
 
-1. +, -, *, / - simple math operators
-2. ^ - power
-3. sin(x), cos(x) - trigonometric functions
-5. e - Euler's number
-4. ln(x) - natural logarithm
-5. lg(x) - base 10 logarithm
-6. pi - pi number
-7. sh(x), ch(x) - hyperbolic functions
+1. `+`, `-`, `*`, `/` - simple math operators
+2. `^` - power
+3. `sin(x)`, `cos(x)` - trigonometric functions
+5. `e` - Euler's number
+4. `ln(x)` - natural logarithm
+5. `lg(x)` - base 10 logarithm
+6. `pi` - pi number
+7. `sh(x)`, `ch(x)` - hyperbolic functions
 
 ## Dependencies
 
